@@ -34,7 +34,7 @@ endif
 
 .PHONY: clean
 
-LuaAPRS: $(OBJECT_FILES)
+LuaAPRS-IS: $(OBJECT_FILES)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $^ -o $@ $(LDFLAGS) $(LDLIBS)
 
 clean:
