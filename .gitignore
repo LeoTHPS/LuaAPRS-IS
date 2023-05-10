@@ -3,4 +3,5 @@
 
 # Build results
 *.o
-*.exe
+LuaAPRS-IS
+LuaAPRS-IS.exe
