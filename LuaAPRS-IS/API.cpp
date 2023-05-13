@@ -147,6 +147,10 @@ bool                                       aprs_is_write_packet(aprs_is* is, apr
 
 	return true;
 }
+AL::uint16                                 aprs_is_generate_passcode(const char* callsign)
+{
+	return APRS::IS::GeneratePasscode(callsign);
+}
 
 const char*                                aprs_packet_get_igate(aprs_packet* packet)
 {
@@ -182,6 +186,7 @@ void APRS::API::RegisterGlobals()
 	APRS_API_RegisterGlobalFunction(lua, aprs_is_disconnect);
 	APRS_API_RegisterGlobalFunction(lua, aprs_is_read_packet);
 	// APRS_API_RegisterGlobalFunction(lua, aprs_is_write_packet);
+	APRS_API_RegisterGlobalFunction(lua, aprs_is_generate_passcode);
 
 	APRS_API_RegisterGlobalFunction(lua, aprs_packet_get_igate);
 	APRS_API_RegisterGlobalFunction(lua, aprs_packet_get_qflag);

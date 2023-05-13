@@ -32,7 +32,11 @@ APRS =
 
 		-- @return false on connection closed
 		WritePacket = function(aprs_is, packet)
-			return aprs_is_write_packet(aprs_is, packet)
+			return aprs_is_write_packet(aprs_is, packet);
+		end,
+
+		GeneratePasscode = function(callsign)
+			return aprs_is_generate_passcode(callsign);
 		end
 	},
 
