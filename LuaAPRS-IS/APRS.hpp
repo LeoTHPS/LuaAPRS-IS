@@ -65,6 +65,7 @@ namespace APRS
 	{
 		class TcpClient
 		{
+			bool                    isBlocking  = false;
 			bool                    isConnected = false;
 
 			AL::Network::TcpSocket* lpSocket;
@@ -81,6 +82,11 @@ namespace APRS
 
 					Disconnect();
 				}
+			}
+
+			bool IsBlocking() const
+			{
+				return isBlocking;
 			}
 
 			bool IsConnected() const
@@ -101,9 +107,7 @@ namespace APRS
 				);
 
 				// this only throws if the socket is already open
-				lpSocket->SetBlocking(
-					AL::False
-				);
+				lpSocket->SetBlocking(IsBlocking());
 
 				try
 				{
@@ -231,6 +235,19 @@ namespace APRS
 						AL::Move(exception),
 						"Error sending Packet [Buffer: %s]",
 						line.GetCString()
+					);
+				}
+			}
+
+			// @throw AL::Exception
+			void SetBlocking(bool value)
+			{
+				isBlocking = value;
+
+				if (IsConnected())
+				{
+					lpSocket->SetBlocking(
+						value
 					);
 				}
 			}

@@ -11,6 +11,10 @@ APRS =
 			aprs_is_deinit(aprs_is);
 		end,
 
+		IsBlocking = function(aprs_is)
+			return aprs_is_is_blocking(aprs_is);
+		end,
+
 		IsConnected = function(aprs_is)
 			return aprs_is_is_connected(aprs_is);
 		end,
@@ -33,6 +37,10 @@ APRS =
 		-- @return false on connection closed
 		WritePacket = function(aprs_is, packet)
 			return aprs_is_write_packet(aprs_is, packet);
+		end,
+
+		SetBlocking = function(aprs_is, value)
+			return aprs_is_set_blocking(aprs_is, value);
 		end,
 
 		GeneratePasscode = function(callsign)

@@ -32,6 +32,10 @@ void                                       aprs_is_deinit(aprs_is* is)
 {
 	delete is;
 }
+bool                                       aprs_is_is_blocking(aprs_is* is)
+{
+	return is->client.IsBlocking();
+}
 bool                                       aprs_is_is_connected(aprs_is* is)
 {
 	if (is == nullptr)
@@ -147,6 +151,25 @@ bool                                       aprs_is_write_packet(aprs_is* is, apr
 
 	return true;
 }
+bool                                       aprs_is_set_blocking(aprs_is* is, bool value)
+{
+	try
+	{
+		is->client.SetBlocking(
+			value
+		);
+	}
+	catch (const AL::Exception& exception)
+	{
+		AL::OS::Console::WriteException(
+			exception
+		);
+
+		return false;
+	}
+
+	return true;
+}
 AL::uint16                                 aprs_is_generate_passcode(const char* callsign)
 {
 	return APRS::IS::GeneratePasscode(callsign);
@@ -181,11 +204,13 @@ void APRS::API::RegisterGlobals()
 {
 	APRS_API_RegisterGlobalFunction(lua, aprs_is_init);
 	APRS_API_RegisterGlobalFunction(lua, aprs_is_deinit);
+	APRS_API_RegisterGlobalFunction(lua, aprs_is_is_blocking);
 	APRS_API_RegisterGlobalFunction(lua, aprs_is_is_connected);
 	APRS_API_RegisterGlobalFunction(lua, aprs_is_connect);
 	APRS_API_RegisterGlobalFunction(lua, aprs_is_disconnect);
 	APRS_API_RegisterGlobalFunction(lua, aprs_is_read_packet);
 	// APRS_API_RegisterGlobalFunction(lua, aprs_is_write_packet);
+	APRS_API_RegisterGlobalFunction(lua, aprs_is_set_blocking);
 	APRS_API_RegisterGlobalFunction(lua, aprs_is_generate_passcode);
 
 	APRS_API_RegisterGlobalFunction(lua, aprs_packet_get_igate);
