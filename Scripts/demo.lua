@@ -5,12 +5,13 @@ local config =
 	['Host']     = 'noam.aprs2.net',
 	['Port']     = 14580,
 	['Filter']   = 't/m',
-	['Callsign'] = 'N0CALL'
+	['Callsign'] = 'N0CALL',
+	['Passcode'] = 00000
 };
 
 local aprs_is = APRS.IS.Init();
 
-if APRS.IS.Connect(aprs_is, config['Host'], config['Port'], config['Callsign'], APRS.IS.GeneratePasscode(config['Callsign']), config['Filter']) then
+if APRS.IS.Connect(aprs_is, config['Host'], config['Port'], config['Callsign'], config['Passcode'], config['Filter']) then
 	print('Connected to ' .. config['Host'] .. ':' .. config['Port'] .. ' as ' .. config['Callsign']);
 	
 	while APRS.IS.IsConnected(aprs_is) do
