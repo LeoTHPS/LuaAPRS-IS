@@ -17,7 +17,7 @@ if APRS.IS.Connect(aprs_is, config['Host'], config['Port'], config['Callsign'], 
 	APRS.IS.SetBlocking(aprs_is, true);
 
 	while APRS.IS.IsConnected(aprs_is) do
-		local aprs_is_would_block, aprs_packet = APRS.IS.ReadPacket(aprs_is, true);
+		local aprs_is_would_block, aprs_packet = APRS.IS.ReadPacket(aprs_is);
 
 		if not aprs_is_would_block and (aprs_packet ~= nil) then
 			local aprs_packet_igate    = APRS.Packet.GetIGate(aprs_packet);
