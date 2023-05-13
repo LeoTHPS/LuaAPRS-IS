@@ -41,8 +41,7 @@ int main(int argc, char* argv[])
 			{
 
 				throw AL::Exception(
-					"Script '%s' was not found",
-					argv[1]
+					"File not found"
 				);
 			}
 		}
