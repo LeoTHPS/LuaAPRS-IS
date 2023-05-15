@@ -377,6 +377,8 @@ namespace APRS
 					2
 				);
 
+				// AL::OS::Console::WriteLine("-> %s", value.GetCString());
+
 				return true;
 			}
 
@@ -398,10 +400,12 @@ namespace APRS
 
 				AL::size_t numberOfBytesSent;
 
+				static constexpr char EOL[] = "\r\n";
+
 				try
 				{
 					if (!AL::Network::SocketExtensions::SendAll(*lpSocket, value.GetCString(), valueLength, numberOfBytesSent) ||
-						!AL::Network::SocketExtensions::SendAll(*lpSocket, "\r\n", 2, numberOfBytesSent))
+						!AL::Network::SocketExtensions::SendAll(*lpSocket, EOL, sizeof(EOL) - 1, numberOfBytesSent))
 					{
 
 						throw AL::Exception(
@@ -415,6 +419,8 @@ namespace APRS
 
 					throw;
 				}
+
+				// AL::OS::Console::WriteLine("<- %s", value.GetCString());
 			}
 		};
 
