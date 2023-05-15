@@ -41,7 +41,7 @@ APRS =
 
 		-- @return false on connection closed
 		SendPacket = function(aprs_is, sender, tocall, digipath, content)
-			return aprs_is_write_packet(aprs_is, sender, tocall, digipath, content);
+			return aprs_is_send_packet(aprs_is, sender, tocall, digipath, content);
 		end,
 
 		SetBlocking = function(aprs_is, value)
