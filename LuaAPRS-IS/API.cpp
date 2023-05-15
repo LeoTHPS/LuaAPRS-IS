@@ -151,6 +151,18 @@ bool                                       aprs_is_write_packet(aprs_is* is, apr
 
 	return true;
 }
+bool                                       aprs_is_send_packet(aprs_is* is, const char* sender, const char* tocall, const char* digipath, const char* content)
+{
+	aprs_packet packet =
+	{
+		.ToCall   = tocall,
+		.Sender   = sender,
+		.Content  = content,
+		.DigiPath = digipath
+	};
+
+	return aprs_is_write_packet(is, &packet);
+}
 bool                                       aprs_is_set_blocking(aprs_is* is, bool value)
 {
 	try
@@ -175,29 +187,67 @@ AL::uint16                                 aprs_is_generate_passcode(const char*
 	return APRS::IS::GeneratePasscode(callsign);
 }
 
+aprs_packet*                               aprs_packet_init(const char* sender, const char* tocall, const char* digipath, const char* content)
+{
+	return new aprs_packet
+	{
+		.ToCall   = tocall,
+		.Sender   = sender,
+		.Content  = content,
+		.DigiPath = digipath
+	};
+}
+void                                       aprs_packet_deinit(aprs_packet* packet)
+{
+	delete packet;
+}
 const char*                                aprs_packet_get_igate(aprs_packet* packet)
 {
 	return packet->IGate.GetCString();
+}
+void                                       aprs_packet_set_igate(aprs_packet* packet, const char* value)
+{
+	packet->IGate = value;
 }
 const char*                                aprs_packet_get_qflag(aprs_packet* packet)
 {
 	return packet->QFlag.GetCString();
 }
+void                                       aprs_packet_set_qflag(aprs_packet* packet, const char* value)
+{
+	packet->QFlag = value;
+}
 const char*                                aprs_packet_get_tocall(aprs_packet* packet)
 {
 	return packet->ToCall.GetCString();
+}
+void                                       aprs_packet_set_tocall(aprs_packet* packet, const char* value)
+{
+	packet->ToCall = value;
 }
 const char*                                aprs_packet_get_sender(aprs_packet* packet)
 {
 	return packet->Sender.GetCString();
 }
+void                                       aprs_packet_set_sender(aprs_packet* packet, const char* value)
+{
+	packet->Sender = value;
+}
 const char*                                aprs_packet_get_content(aprs_packet* packet)
 {
 	return packet->Content.GetCString();
 }
+void                                       aprs_packet_set_content(aprs_packet* packet, const char* value)
+{
+	packet->Content = value;
+}
 const char*                                aprs_packet_get_digipath(aprs_packet* packet)
 {
 	return packet->DigiPath.GetCString();
+}
+void                                       aprs_packet_set_digipath(aprs_packet* packet, const char* value)
+{
+	packet->DigiPath = value;
 }
 
 void APRS::API::RegisterGlobals()
@@ -209,14 +259,23 @@ void APRS::API::RegisterGlobals()
 	APRS_API_RegisterGlobalFunction(lua, aprs_is_connect);
 	APRS_API_RegisterGlobalFunction(lua, aprs_is_disconnect);
 	APRS_API_RegisterGlobalFunction(lua, aprs_is_read_packet);
-	// APRS_API_RegisterGlobalFunction(lua, aprs_is_write_packet);
+	APRS_API_RegisterGlobalFunction(lua, aprs_is_write_packet);
+	APRS_API_RegisterGlobalFunction(lua, aprs_is_send_packet);
 	APRS_API_RegisterGlobalFunction(lua, aprs_is_set_blocking);
 	APRS_API_RegisterGlobalFunction(lua, aprs_is_generate_passcode);
 
+	APRS_API_RegisterGlobalFunction(lua, aprs_packet_init);
+	APRS_API_RegisterGlobalFunction(lua, aprs_packet_deinit);
 	APRS_API_RegisterGlobalFunction(lua, aprs_packet_get_igate);
+	APRS_API_RegisterGlobalFunction(lua, aprs_packet_set_igate);
 	APRS_API_RegisterGlobalFunction(lua, aprs_packet_get_qflag);
+	APRS_API_RegisterGlobalFunction(lua, aprs_packet_set_qflag);
 	APRS_API_RegisterGlobalFunction(lua, aprs_packet_get_tocall);
+	APRS_API_RegisterGlobalFunction(lua, aprs_packet_set_tocall);
 	APRS_API_RegisterGlobalFunction(lua, aprs_packet_get_sender);
+	APRS_API_RegisterGlobalFunction(lua, aprs_packet_set_sender);
 	APRS_API_RegisterGlobalFunction(lua, aprs_packet_get_content);
+	APRS_API_RegisterGlobalFunction(lua, aprs_packet_set_content);
 	APRS_API_RegisterGlobalFunction(lua, aprs_packet_get_digipath);
+	APRS_API_RegisterGlobalFunction(lua, aprs_packet_set_digipath);
 }
