@@ -1,5 +1,6 @@
 #include "API.hpp"
-#include "APRS.hpp"
+
+#include <APRS-IS.hpp>
 
 #include <AL/OS/Console.hpp>
 

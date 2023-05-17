@@ -5,7 +5,7 @@ SOURCE_FILES = main.cpp API.cpp
 OBJECT_FILES = $(SOURCE_FILES:.cpp=.o)
 
 CPPFLAGS     += 
-CXXFLAGS     += -Wall -Wfatal-errors -g -std=c++20 -I. -I"$(AL_INCLUDE)"
+CXXFLAGS     += -Wall -Wfatal-errors -g -std=c++20 -I. -I"$(AL_INCLUDE)" -I"$(LIB_APRS_IS_INCLUDE)"
 
 ifdef COMPILER
 	ifeq ($(COMPILER), GNU)
