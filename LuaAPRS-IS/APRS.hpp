@@ -6,6 +6,9 @@
 #include <AL/Network/TcpSocket.hpp>
 #include <AL/Network/SocketExtensions.hpp>
 
+#define APRS_SOFTWARE_NAME    "LuaAPRS-IS"
+#define APRS_SOFTWARE_VERSION "0.1"
+
 namespace APRS
 {
 	struct Packet
@@ -151,14 +154,18 @@ namespace APRS
 
 				try
 				{
-					SendAuthentication(
-						callsign,
-						passcode,
-						filter
-					);
+					if (!Authenticate(callsign, passcode, filter))
+					{
+
+						throw AL::Exception(
+							"Login failed"
+						);
+					}
 				}
 				catch (AL::Exception& exception)
 				{
+					isConnected = false;
+
 					lpSocket->Close();
 
 					delete lpSocket;
@@ -254,12 +261,12 @@ namespace APRS
 
 		private:
 			// @throw AL::Exception
-			void SendAuthentication(const AL::String& callsign, AL::uint16 passcode, const AL::Collections::Array<AL::String>& filter)
+			bool Authenticate(const AL::String& callsign, AL::uint16 passcode, const AL::Collections::Array<AL::String>& filter)
 			{
 				auto line = [&callsign, passcode, &filter]()
 				{
 					AL::StringBuilder sb;
-					sb << "user " << callsign << " pass " << passcode;
+					sb << "user " << callsign << " pass " << passcode << " vers " APRS_SOFTWARE_NAME " " APRS_SOFTWARE_VERSION;
 
 					if (filter.GetSize() != 0)
 					{
@@ -286,6 +293,27 @@ namespace APRS
 						"Error sending authentication"
 					);
 				}
+
+				{
+					AL::String                 line;
+					AL::Regex::MatchCollection matches;
+
+					while (ReadLine(line, true) || !IsBlocking())
+					{
+						if (AL::Regex::Match(matches, "^# logresp ([^ ]+) (.+)$", line))
+						{
+							if (matches[2].StartsWith("verified", true))
+							{
+
+								return true;
+							}
+
+							return false;
+						}
+					}
+				}
+
+				return true;
 			}
 
 		private:
@@ -377,8 +405,6 @@ namespace APRS
 					2
 				);
 
-				// AL::OS::Console::WriteLine("-> %s", value.GetCString());
-
 				return true;
 			}
 
@@ -419,8 +445,6 @@ namespace APRS
 
 					throw;
 				}
-
-				// AL::OS::Console::WriteLine("<- %s", value.GetCString());
 			}
 		};
 
