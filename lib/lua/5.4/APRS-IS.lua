@@ -58,6 +58,11 @@ APRS.IS =
 	end,
 
 	-- @return false on connection closed
+	SendMessageAck = function(aprs_is, tocall, destination, value)
+		return aprs_is_send_message_ack(aprs_is, tostring(tocall), tostring(destination), tostring(value));
+	end,
+
+	-- @return false on connection closed
 	SendPosition = function(aprs_is, tocall, latitude, longitude, altitude, comment, symbol_table, symbol_table_key)
 		if comment then
 			comment = tostring(comment);

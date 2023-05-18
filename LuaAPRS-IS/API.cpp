@@ -181,6 +181,18 @@ bool                                       aprs_is_send_message(aprs_is* is, con
 
 	return aprs_is_write_packet(is, &packet);
 }
+bool                                       aprs_is_send_message_ack(aprs_is* is, const char* tocall, const char* destination, const char* value)
+{
+	APRS::Message message =
+	{
+		.Content     = AL::String::Format("ack%s", value),
+		.Destination = destination
+	};
+
+	auto packet = message.Encode(tocall, is->callsign, is->digipath);
+
+	return aprs_is_write_packet(is, &packet);
+}
 bool                                       aprs_is_send_position(aprs_is* is, const char* tocall, AL::Float latitude, AL::Float longitude, AL::uint16 altitude, const char* comment, const char* symbol_table, const char* symbol_table_key)
 {
 	APRS::Position position =
@@ -441,6 +453,7 @@ void APRS::API::RegisterGlobals()
 	APRS_API_RegisterGlobalFunction(aprs_is_write_packet);
 	APRS_API_RegisterGlobalFunction(aprs_is_send_packet);
 	APRS_API_RegisterGlobalFunction(aprs_is_send_message);
+	APRS_API_RegisterGlobalFunction(aprs_is_send_message_ack);
 	APRS_API_RegisterGlobalFunction(aprs_is_send_position);
 	APRS_API_RegisterGlobalFunction(aprs_is_set_blocking);
 	APRS_API_RegisterGlobalFunction(aprs_is_generate_passcode);
