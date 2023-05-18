@@ -1,25 +1,28 @@
-require('APRS')
+require('APRS-IS');
+
+require('Extensions.Types');
 
 local config =
 {
-	['Host']     = 'noam.aprs2.net',
-	['Port']     = 14580,
-	['Filter']   = 't/m',
-	['Callsign'] = 'N0CALL',
-	['Passcode'] = 00000
+	Host     = 'noam.aprs2.net',
+	Port     = 14580,
+	Filter   = 't/mp',
+	Callsign = 'N0CALL',
+	Passcode = 0,
+	DigiPath = 'WIDE1-1'
 };
 
-local aprs_is = APRS.IS.Init();
+local aprs_is = APRS.IS.Init(config.Callsign, config.Passcode, config.Filter, config.DigiPath);
 
-if APRS.IS.Connect(aprs_is, config['Host'], config['Port'], config['Callsign'], config['Passcode'], config['Filter']) then
-	print('Connected to ' .. config['Host'] .. ':' .. config['Port'] .. ' as ' .. config['Callsign']);
+if APRS.IS.Connect(aprs_is, config.Host, config.Port) then
+	print('Connected to ' .. config.Host .. ':' .. config.Port .. ' as ' .. config.Callsign);
 
 	APRS.IS.SetBlocking(aprs_is, true);
 
 	while APRS.IS.IsConnected(aprs_is) do
 		local aprs_is_would_block, aprs_packet = APRS.IS.ReadPacket(aprs_is);
 
-		if not aprs_is_would_block and (aprs_packet ~= nil) then
+		if not aprs_is_would_block and not Types.IsNull(aprs_packet) then
 			local aprs_packet_igate    = APRS.Packet.GetIGate(aprs_packet);
 			local aprs_packet_qflag    = APRS.Packet.GetQFlag(aprs_packet);
 			local aprs_packet_tocall   = APRS.Packet.GetToCall(aprs_packet);

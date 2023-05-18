@@ -1,8 +1,11 @@
 RM           ?= rm -f
 CXX          ?= g++
 
-SOURCE_FILES = main.cpp API.cpp
-OBJECT_FILES = $(SOURCE_FILES:.cpp=.o)
+SOURCE_FILES  = main.cpp API.cpp API_Extensions.cpp
+SOURCE_FILES += Extensions/Types.cpp
+SOURCE_FILES += Extensions/System.cpp
+SOURCE_FILES += Extensions/Process.cpp
+OBJECT_FILES  = $(SOURCE_FILES:.cpp=.o)
 
 CPPFLAGS     += 
 CXXFLAGS     += -Wall -Wfatal-errors -g -std=c++20 -I. -I"$(AL_INCLUDE)" -I"$(LIB_APRS_IS_INCLUDE)"
@@ -19,16 +22,16 @@ endif
 
 ifdef PLATFORM
 	ifeq ($(PLATFORM), LINUX)
-#		liblua5.4-dev libsqlite3-dev
+#		liblua5.4-dev
 
-		LDLIBS += -lpthread -llua5.4 -lsqlite3
+		LDLIBS += -lpthread -llua5.4
 	endif
 
 	ifeq ($(PLATFORM), WINDOWS)
 		LDLIBS += -luser32 -lntdll -lkernel32 -lAdvapi32
 		LDLIBS += -lshlwapi
 		LDLIBS += -lwsock32 -lws2_32 -lIphlpapi
-		LDLIBS += -llua -lsqlite3
+		LDLIBS += -llua
 	endif
 endif
 

@@ -3,6 +3,12 @@
 
 #include <AL/Lua54/Lua.hpp>
 
+#define APRS_API_RegisterGlobal(__variable__)                              APRS_API_RegisterGlobalEx(__variable__, #__variable__)
+#define APRS_API_RegisterGlobalEx(__variable__, __variable_name__)         lua.SetGlobal(__variable_name__, __variable__)
+
+#define APRS_API_RegisterGlobalFunction(__function__)                      APRS_API_RegisterGlobalFunctionEx(__function__, #__function__)
+#define APRS_API_RegisterGlobalFunctionEx(__function__, __function_name__) lua.SetGlobalFunction<__function__>(__function_name__)
+
 namespace APRS
 {
 	class API
@@ -54,6 +60,7 @@ namespace APRS
 			}
 
 			RegisterGlobals();
+			RegisterExtensions();
 		}
 
 		// @throw AL::Exception
@@ -107,5 +114,7 @@ namespace APRS
 
 	private:
 		static void RegisterGlobals();
+
+		static void RegisterExtensions();
 	};
 }
