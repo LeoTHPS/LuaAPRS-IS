@@ -321,7 +321,7 @@ void                                       aprs_message_deinit(aprs_message* mes
 }
 const char*                                aprs_message_get_ack(aprs_message* message)
 {
-	return message->Ack.GetCString();
+	return (message->Ack.GetLength() != 0) ? message->Ack.GetCString() : nullptr;
 }
 void                                       aprs_message_set_ack(aprs_message* message, const char* value)
 {
