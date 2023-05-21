@@ -4,6 +4,13 @@
 
 #include "API.hpp"
 
+enum EXIT_CODES : int
+{
+	EXIT_CODE_SUCCESS,
+	EXIT_CODE_INVALID_ARGS,
+	EXIT_CODE_UNHANDLED_EXCEPTION
+};
+
 int main(int argc, char* argv[])
 {
 	if (argc != 2)
@@ -17,7 +24,7 @@ int main(int argc, char* argv[])
 			argv[0]
 		);
 
-		return 0;
+		return EXIT_CODE_INVALID_ARGS;
 	}
 
 	try
@@ -60,7 +67,9 @@ int main(int argc, char* argv[])
 		AL::OS::Console::WriteException(
 			exception
 		);
+
+		return EXIT_CODE_UNHANDLED_EXCEPTION;
 	}
 
-	return 0;
+	return EXIT_CODE_SUCCESS;
 }
