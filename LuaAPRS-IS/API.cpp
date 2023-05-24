@@ -228,10 +228,6 @@ bool                                       aprs_is_set_blocking(aprs_is* is, boo
 
 	return true;
 }
-AL::uint16                                 aprs_is_generate_passcode(const char* callsign)
-{
-	return APRS::IS::GeneratePasscode(callsign);
-}
 
 bool                                       aprs_packet_is_message(aprs_packet* packet)
 {
@@ -456,7 +452,6 @@ void APRS::API::RegisterGlobals()
 	APRS_API_RegisterGlobalFunction(aprs_is_send_message_ack);
 	APRS_API_RegisterGlobalFunction(aprs_is_send_position);
 	APRS_API_RegisterGlobalFunction(aprs_is_set_blocking);
-	APRS_API_RegisterGlobalFunction(aprs_is_generate_passcode);
 
 	APRS_API_RegisterGlobalFunction(aprs_packet_is_message);
 	APRS_API_RegisterGlobalFunction(aprs_packet_is_position);

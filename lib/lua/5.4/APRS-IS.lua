@@ -73,9 +73,5 @@ APRS.IS =
 
 	SetBlocking = function(aprs_is, value)
 		return aprs_is_set_blocking(aprs_is, tonumber(value));
-	end,
-
-	GeneratePasscode = function(callsign)
-		return aprs_is_generate_passcode(callsign);
 	end
 };
