@@ -2,11 +2,6 @@
 
 #include <AL/OS/System.hpp>
 
-void       system_sleep(AL::uint32 ms)
-{
-	AL::Sleep(AL::TimeSpan::FromMilliseconds(ms));
-}
-
 AL::uint64 system_get_idle_time()
 {
 #if defined(AL_PLATFORM_LINUX)
