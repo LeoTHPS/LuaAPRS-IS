@@ -4,15 +4,38 @@
 
 #include "API.hpp"
 
-enum EXIT_CODES : int
+enum EXIT_CODE_ERRORS : AL::int16
 {
-	EXIT_CODE_SUCCESS,
-	EXIT_CODE_INVALID_ARGS,
-	EXIT_CODE_UNHANDLED_EXCEPTION
+	EXIT_CODE_ERROR_BASE_SUCCESS,
+	EXIT_CODE_ERROR_BASE_INVALID_ARGS,
+	EXIT_CODE_ERROR_BASE_UNHANDLED_EXCEPTION
+};
+
+enum EXIT_CODE_ERROR_SOURCES : AL::uint8
+{
+	EXIT_CODE_ERROR_SOURCE_BASE,
+	EXIT_CODE_ERROR_SOURCE_SCRIPT
+};
+
+struct ExitCode
+{
+	AL::uint8 Source;
+	AL::int16 ErrorCode;
+
+	operator int() const
+	{
+		return (static_cast<int>(Source) << 16) | static_cast<int>(ErrorCode);
+	}
 };
 
 int main(int argc, char* argv[])
 {
+	ExitCode exitCode =
+	{
+		.Source    = EXIT_CODE_ERROR_SOURCE_BASE,
+		.ErrorCode = EXIT_CODE_ERROR_BASE_SUCCESS
+	};
+
 	if (argc != 2)
 	{
 		AL::OS::Console::WriteLine(
@@ -24,14 +47,16 @@ int main(int argc, char* argv[])
 			argv[0]
 		);
 
-		return EXIT_CODE_INVALID_ARGS;
+		exitCode.ErrorCode = EXIT_CODE_ERROR_BASE_INVALID_ARGS;
+
+		return exitCode;
 	}
 
 	try
 	{
 		try
 		{
-			APRS::API::Init();
+			APRS_IS::API::Init();
 		}
 		catch (AL::Exception& exception)
 		{
@@ -42,9 +67,11 @@ int main(int argc, char* argv[])
 			);
 		}
 
+		AL::int16 scriptExitCode;
+
 		try
 		{
-			if (!APRS::API::LoadScript(argv[1]))
+			if (!APRS_IS::API::LoadScript(argv[1], scriptExitCode))
 			{
 
 				throw AL::Exception(
@@ -61,6 +88,12 @@ int main(int argc, char* argv[])
 				argv[1]
 			);
 		}
+
+		if (scriptExitCode != SCRIPT_EXIT_CODE_SUCCESS)
+		{
+			exitCode.Source    = EXIT_CODE_ERROR_SOURCE_SCRIPT;
+			exitCode.ErrorCode = scriptExitCode;
+		}
 	}
 	catch (const AL::Exception& exception)
 	{
@@ -68,8 +101,8 @@ int main(int argc, char* argv[])
 			exception
 		);
 
-		return EXIT_CODE_UNHANDLED_EXCEPTION;
+		exitCode.ErrorCode = EXIT_CODE_ERROR_BASE_UNHANDLED_EXCEPTION;
 	}
 
-	return EXIT_CODE_SUCCESS;
+	return exitCode;
 }

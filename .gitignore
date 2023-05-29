@@ -13,10 +13,12 @@
 !/LuaAPRS-IS/Extensions/Types.cpp
 !/LuaAPRS-IS/Extensions/Mutex.hpp
 !/LuaAPRS-IS/Extensions/Mutex.cpp
-!/LuaAPRS-IS/Extensions/Thread.hpp
-!/LuaAPRS-IS/Extensions/Thread.cpp
+!/LuaAPRS-IS/Extensions/Script.hpp
+!/LuaAPRS-IS/Extensions/Script.cpp
 !/LuaAPRS-IS/Extensions/System.hpp
 !/LuaAPRS-IS/Extensions/System.cpp
+!/LuaAPRS-IS/Extensions/Thread.hpp
+!/LuaAPRS-IS/Extensions/Thread.cpp
 !/LuaAPRS-IS/Extensions/Process.hpp
 !/LuaAPRS-IS/Extensions/Process.cpp
 
@@ -24,7 +26,8 @@
 /lib/lua/5.4/Extensions/*
 !/lib/lua/5.4/Extensions/Types.lua
 !/lib/lua/5.4/Extensions/Mutex.lua
-!/lib/lua/5.4/Extensions/Thread.lua
+!/lib/lua/5.4/Extensions/Script.lua
 !/lib/lua/5.4/Extensions/System.lua
+!/lib/lua/5.4/Extensions/Thread.lua
 !/lib/lua/5.4/Extensions/Console.lua
 !/lib/lua/5.4/Extensions/Process.lua

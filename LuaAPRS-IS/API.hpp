@@ -3,13 +3,21 @@
 
 #include <AL/Lua54/Lua.hpp>
 
-#define APRS_API_RegisterGlobal(__variable__)                              APRS_API_RegisterGlobalEx(__variable__, #__variable__)
-#define APRS_API_RegisterGlobalEx(__variable__, __variable_name__)         lua.SetGlobal(__variable_name__, __variable__)
+#include "Extensions/Script.hpp"
 
-#define APRS_API_RegisterGlobalFunction(__function__)                      APRS_API_RegisterGlobalFunctionEx(__function__, #__function__)
-#define APRS_API_RegisterGlobalFunctionEx(__function__, __function_name__) lua.SetGlobalFunction<__function__>(__function_name__)
+#define APRS_IS_API_GetGlobal(__variable__)                                   APRS_IS_API_GetGlobalEx(__variable__, #__variable__)
+#define APRS_IS_API_GetGlobalEx(__variable__, __variable_name__)              __variable__ = APRS_IS::API::GetGlobal(__variable_name__)
 
-namespace APRS
+#define APRS_IS_API_SetGlobal(__variable__)                                   APRS_IS_API_SetGlobalEx(__variable__, #__variable__)
+#define APRS_IS_API_SetGlobalEx(__variable__, __variable_name__)              APRS_IS::API::SetGlobal(__variable_name__, __variable__)
+
+#define APRS_IS_API_RegisterGlobal(__variable__)                              APRS_IS_API_RegisterGlobalEx(__variable__, #__variable__)
+#define APRS_IS_API_RegisterGlobalEx(__variable__, __variable_name__)         lua.SetGlobal(__variable_name__, __variable__)
+
+#define APRS_IS_API_RegisterGlobalFunction(__function__)                      APRS_IS_API_RegisterGlobalFunctionEx(__function__, #__function__)
+#define APRS_IS_API_RegisterGlobalFunctionEx(__function__, __function_name__) lua.SetGlobalFunction<__function__>(__function_name__)
+
+namespace APRS_IS
 {
 	class API
 	{
@@ -63,9 +71,31 @@ namespace APRS
 			RegisterExtensions();
 		}
 
+		template<typename T>
+		static T GetGlobal(const AL::String& name)
+		{
+			AL_ASSERT(
+				IsInitialized(),
+				"API not initialized"
+			);
+
+			return lua.GetGlobal<T>(name);
+		}
+
+		template<typename T>
+		static void SetGlobal(const AL::String& name, T value)
+		{
+			AL_ASSERT(
+				IsInitialized(),
+				"API not initialized"
+			);
+
+			lua.SetGlobal<T>(name, AL::Forward<T>(value));
+		}
+
 		// @throw AL::Exception
 		// @return false if file does not exist
-		static bool LoadScript(const AL::String& file)
+		static bool LoadScript(const AL::String& file, AL::int16& exitCode)
 		{
 			AL_ASSERT(
 				IsInitialized(),
@@ -93,6 +123,8 @@ namespace APRS
 				);
 			}
 
+			script_init();
+
 			try
 			{
 				lua.RunFile(
@@ -101,6 +133,7 @@ namespace APRS
 			}
 			catch (AL::Exception& exception)
 			{
+				script_deinit();
 
 				throw AL::Exception(
 					AL::Move(exception),
@@ -108,6 +141,10 @@ namespace APRS
 					file.GetCString()
 				);
 			}
+
+			exitCode = script_get_exit_code();
+
+			script_deinit();
 
 			return true;
 		}

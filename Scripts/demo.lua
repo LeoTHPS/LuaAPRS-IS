@@ -1,6 +1,7 @@
 require('APRS-IS');
 
 require('Extensions.Types');
+require('Extensions.Script');
 
 local config =
 {
@@ -14,7 +15,9 @@ local config =
 
 local aprs_is = APRS.IS.Init(config.Callsign, config.Passcode, config.Filter, config.DigiPath);
 
-if APRS.IS.Connect(aprs_is, config.Host, config.Port) then
+if not APRS.IS.Connect(aprs_is, config.Host, config.Port) then
+	Script.SetExitCode(Script.ExitCodes.APRS.IS.ConnectionFailed);
+else
 	print('Connected to ' .. config.Host .. ':' .. config.Port .. ' as ' .. config.Callsign);
 
 	APRS.IS.SetBlocking(aprs_is, true);

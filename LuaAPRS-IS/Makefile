@@ -4,8 +4,9 @@ CXX          ?= g++
 SOURCE_FILES  = main.cpp API.cpp API_Extensions.cpp
 SOURCE_FILES += Extensions/Types.cpp
 SOURCE_FILES += Extensions/Mutex.cpp
-SOURCE_FILES += Extensions/Thread.cpp
+SOURCE_FILES += Extensions/Script.cpp
 SOURCE_FILES += Extensions/System.cpp
+SOURCE_FILES += Extensions/Thread.cpp
 SOURCE_FILES += Extensions/Process.cpp
 OBJECT_FILES  = $(SOURCE_FILES:.cpp=.o)
 
