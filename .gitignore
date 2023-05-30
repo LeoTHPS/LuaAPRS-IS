@@ -21,6 +21,8 @@
 !/LuaAPRS-IS/Extensions/Thread.cpp
 !/LuaAPRS-IS/Extensions/Process.hpp
 !/LuaAPRS-IS/Extensions/Process.cpp
+!/LuaAPRS-IS/Extensions/SQLite3.hpp
+!/LuaAPRS-IS/Extensions/SQLite3.cpp
 
 # Lua Extensions
 /lib/lua/5.4/Extensions/*
@@ -31,3 +33,4 @@
 !/lib/lua/5.4/Extensions/Thread.lua
 !/lib/lua/5.4/Extensions/Console.lua
 !/lib/lua/5.4/Extensions/Process.lua
+!/lib/lua/5.4/Extensions/SQLite3.lua

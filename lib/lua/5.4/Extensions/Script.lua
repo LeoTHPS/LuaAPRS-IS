@@ -18,6 +18,11 @@ Script =
 			{
 				ConnectionFailed = SCRIPT_EXIT_CODE_APRS_IS_CONNECTION_FAILED
 			}
+		},
+
+		SQLite3 =
+		{
+			OpenFailed = SCRIPT_EXIT_CODE_SQLITE3_OPEN_FAILED
 		}
 	}
 };

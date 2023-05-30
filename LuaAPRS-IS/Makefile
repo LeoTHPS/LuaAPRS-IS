@@ -8,6 +8,7 @@ SOURCE_FILES += Extensions/Script.cpp
 SOURCE_FILES += Extensions/System.cpp
 SOURCE_FILES += Extensions/Thread.cpp
 SOURCE_FILES += Extensions/Process.cpp
+SOURCE_FILES += Extensions/SQLite3.cpp
 OBJECT_FILES  = $(SOURCE_FILES:.cpp=.o)
 
 CPPFLAGS     += 
@@ -25,16 +26,15 @@ endif
 
 ifdef PLATFORM
 	ifeq ($(PLATFORM), LINUX)
-#		liblua5.4-dev
+#		liblua5.4-dev libsqlite3-dev
 
-		LDLIBS += -lpthread -llua5.4
+		LDLIBS += -lpthread -llua5.4 -lsqlite3
 	endif
 
 	ifeq ($(PLATFORM), WINDOWS)
-		LDLIBS += -luser32 -lntdll -lkernel32 -lAdvapi32
-		LDLIBS += -lshlwapi
+		LDLIBS += -luser32 -lntdll -lkernel32 -lAdvapi32 -lshlwapi
 		LDLIBS += -lwsock32 -lws2_32 -lIphlpapi
-		LDLIBS += -llua
+		LDLIBS += -llua -lsqlite3
 	endif
 endif
 
