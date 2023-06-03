@@ -4,6 +4,10 @@ local date_time_format = '%m/%d/%Y %I:%M:%S %p';
 
 Console =
 {
+	SetTitle = function(value)
+		return console_set_title(tostring(value));
+	end,
+
 	ReadLine = function(module, prefix, include_date_time)
 		Mutex.Lock(Mutex.GetDefaultInstance());
 
@@ -12,18 +16,18 @@ Console =
 		end
 
 		if include_date_time then
-			io.write('[' .. os.date(date_time_format) .. '] ');
+			console_write('[' .. os.date(date_time_format) .. '] ');
 		end
 
 		if module and (module ~= '') then
-			io.write('[' .. module .. '] ');
+			console_write('[' .. module .. '] ');
 		end
 
 		if prefix and (prefix ~= nil) then
-			io.write(prefix .. ': ');
+			console_write(prefix .. ': ');
 		end
 
-		local value = io.read('l');
+		local value = console_read_line();
 
 		Mutex.Unlock(Mutex.GetDefaultInstance());
 
@@ -36,11 +40,19 @@ Console =
 		local date_time = os.date(date_time_format);
 
 		if not module or (module == '') then
-			print('[' .. date_time .. '] ' .. value);
+			console_write_line('[' .. date_time .. '] ' .. value);
 		else
-			print('[' .. date_time .. '] [' .. module .. '] ' .. value);
+			console_write_line('[' .. date_time .. '] [' .. module .. '] ' .. value);
 		end
 
 		Mutex.Unlock(Mutex.GetDefaultInstance());
+	end,
+
+	EnableQuickEdit = function()
+		return console_enable_quick_edit_mode();
+	end,
+
+	DisableQuickEdit = function()
+		return console_disable_quick_edit_mode();
 	end
 };

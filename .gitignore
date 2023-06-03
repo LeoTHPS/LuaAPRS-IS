@@ -19,6 +19,8 @@
 !/LuaAPRS-IS/Extensions/System.cpp
 !/LuaAPRS-IS/Extensions/Thread.hpp
 !/LuaAPRS-IS/Extensions/Thread.cpp
+!/LuaAPRS-IS/Extensions/Console.hpp
+!/LuaAPRS-IS/Extensions/Console.cpp
 !/LuaAPRS-IS/Extensions/Process.hpp
 !/LuaAPRS-IS/Extensions/Process.cpp
 !/LuaAPRS-IS/Extensions/SQLite3.hpp

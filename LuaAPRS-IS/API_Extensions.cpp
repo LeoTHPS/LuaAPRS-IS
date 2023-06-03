@@ -5,6 +5,7 @@
 #include "Extensions/Script.hpp"
 #include "Extensions/System.hpp"
 #include "Extensions/Thread.hpp"
+#include "Extensions/Console.hpp"
 #include "Extensions/Process.hpp"
 #include "Extensions/SQLite3.hpp"
 
@@ -48,6 +49,17 @@ APRS_IS_API_DEFINE_Extension(Thread,
 	APRS_IS_API_RegisterGlobalFunction(thread_join);
 })
 
+APRS_IS_API_DEFINE_Extension(Console,
+{
+	APRS_IS_API_RegisterGlobalFunction(console_set_title);
+	APRS_IS_API_RegisterGlobalFunction(console_read);
+	APRS_IS_API_RegisterGlobalFunction(console_read_line);
+	APRS_IS_API_RegisterGlobalFunction(console_write);
+	APRS_IS_API_RegisterGlobalFunction(console_write_line);
+	APRS_IS_API_RegisterGlobalFunction(console_enable_quick_edit_mode);
+	APRS_IS_API_RegisterGlobalFunction(console_disable_quick_edit_mode);
+})
+
 APRS_IS_API_DEFINE_Extension(Process,
 {
 	APRS_IS_API_RegisterGlobalFunction(process_get_root_directory);
@@ -86,6 +98,7 @@ void APRS_IS::API::RegisterExtensions()
 	APRS_IS_API_RegisterExtension(Script);
 	APRS_IS_API_RegisterExtension(System);
 	APRS_IS_API_RegisterExtension(Thread);
+	APRS_IS_API_RegisterExtension(Console);
 	APRS_IS_API_RegisterExtension(Process);
 	APRS_IS_API_RegisterExtension(SQLite3);
 }

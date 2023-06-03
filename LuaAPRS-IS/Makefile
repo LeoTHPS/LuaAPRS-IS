@@ -7,6 +7,7 @@ SOURCE_FILES += Extensions/Mutex.cpp
 SOURCE_FILES += Extensions/Script.cpp
 SOURCE_FILES += Extensions/System.cpp
 SOURCE_FILES += Extensions/Thread.cpp
+SOURCE_FILES += Extensions/Console.cpp
 SOURCE_FILES += Extensions/Process.cpp
 SOURCE_FILES += Extensions/SQLite3.cpp
 OBJECT_FILES  = $(SOURCE_FILES:.cpp=.o)
