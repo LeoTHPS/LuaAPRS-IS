@@ -1,4 +1,6 @@
-#include "Thread.hpp"
+#define LUA_APRS_IS_EXTENSION
+
+#include "Extension.hpp"
 
 #include <AL/OS/Thread.hpp>
 #include <AL/OS/Console.hpp>
@@ -7,6 +9,8 @@ struct thread
 {
 	AL::OS::Thread thread;
 };
+
+typedef AL::Lua54::Function::LuaCallback<void(thread* thread)> thread_start_callback;
 
 void    thread_sleep(AL::uint32 ms)
 {
@@ -80,3 +84,17 @@ bool    thread_join(thread* thread, AL::uint32 max_wait_time_ms)
 
 	return true;
 }
+
+LUA_APRS_IS_EXTENSION_INIT([](Extension& extension)
+{
+	LUA_APRS_IS_RegisterGlobalFunction(thread_sleep);
+	LUA_APRS_IS_RegisterGlobalFunction(thread_start);
+	LUA_APRS_IS_RegisterGlobalFunction(thread_join);
+});
+
+LUA_APRS_IS_EXTENSION_DEINIT([](Extension& extension)
+{
+	LUA_APRS_IS_UnregisterGlobalFunction(thread_sleep);
+	LUA_APRS_IS_UnregisterGlobalFunction(thread_start);
+	LUA_APRS_IS_UnregisterGlobalFunction(thread_join);
+});

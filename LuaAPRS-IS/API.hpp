@@ -3,6 +3,10 @@
 
 #include <AL/Lua54/Lua.hpp>
 
+#include <AL/OS/Process.hpp>
+
+#include "Extension.hpp"
+
 #include "Extensions/Script.hpp"
 
 #define APRS_IS_API_GetGlobal(__variable__)                                   APRS_IS_API_GetGlobalEx(__variable__, #__variable__)
@@ -14,11 +18,26 @@
 #define APRS_IS_API_RegisterGlobal(__variable__)                              APRS_IS_API_RegisterGlobalEx(__variable__, #__variable__)
 #define APRS_IS_API_RegisterGlobalEx(__variable__, __variable_name__)         lua.SetGlobal(__variable_name__, __variable__)
 
+#define APRS_IS_API_UnregisterGlobal(__variable__)                            APRS_IS_API_UnregisterGlobalEx(#__variable__)
+#define APRS_IS_API_UnregisterGlobalEx(__variable_name__)                     lua.RemoveGlobal(__variable_name__)
+
 #define APRS_IS_API_RegisterGlobalFunction(__function__)                      APRS_IS_API_RegisterGlobalFunctionEx(__function__, #__function__)
 #define APRS_IS_API_RegisterGlobalFunctionEx(__function__, __function_name__) lua.SetGlobalFunction<__function__>(__function_name__)
 
+#define APRS_IS_API_UnregisterGlobalFunction(__function__)                    APRS_IS_API_UnregisterGlobalFunctionEx(#__function__)
+#define APRS_IS_API_UnregisterGlobalFunctionEx(__function_name__)             lua.RemoveGlobal(__function_name__)
+
 namespace APRS_IS
 {
+	struct Extension
+	{
+		AL::OS::Process               process;
+		AL::OS::ProcessLibrary        process_library;
+		::Extension*                  extension;
+		lua_aprs_is_extension_init*   extension_init;
+		lua_aprs_is_extension_deinit* extension_deinit;
+	};
+
 	class API
 	{
 		inline static AL::Lua54::State lua;
@@ -147,6 +166,125 @@ namespace APRS_IS
 			script_deinit();
 
 			return true;
+		}
+
+		// @throw AL::Exception
+		// @return nullptr if file does not exist
+		static Extension* LoadExtension(const AL::String& file)
+		{
+			AL_ASSERT(
+				IsInitialized(),
+				"API not initialized"
+			);
+
+			auto extension = new Extension
+			{
+			};
+
+			try
+			{
+				try
+				{
+					AL::OS::Process::OpenCurrent(
+						extension->process
+					);
+				}
+				catch (AL::Exception& exception)
+				{
+
+					throw AL::Exception(
+						AL::Move(exception),
+						"Error opening AL::OS::Process"
+					);
+				}
+
+				try
+				{
+					if (!AL::OS::ProcessLibrary::Load(extension->process_library, extension->process, file))
+					{
+						extension->process.Close();
+
+						delete extension;
+
+						return nullptr;
+					}
+				}
+				catch (AL::Exception& exception)
+				{
+					extension->process.Close();
+
+					throw AL::Exception(
+						AL::Move(exception),
+						"Error loading AL::OS::ProcessLibrary"
+					);
+				}
+
+				try
+				{
+					if (!extension->process_library.GetExport(extension->extension_init, "lua_aprs_is_extension_init"))
+					{
+
+						throw AL::Exception(
+							"Error resolving 'lua_aprs_is_extension_init'"
+						);
+					}
+
+					if (!extension->process_library.GetExport(extension->extension_deinit, "lua_aprs_is_extension_deinit"))
+					{
+
+						throw AL::Exception(
+							"Error resolving 'lua_aprs_is_extension_deinit'"
+						);
+					}
+				}
+				catch (AL::Exception& exception)
+				{
+					extension->process_library.Unload();
+					extension->process.Close();
+
+					throw AL::Exception(
+						AL::Move(exception),
+						"Error resolving AL::OS::ProcessLibrary imports"
+					);
+				}
+			}
+			catch (AL::Exception& exception)
+			{
+				delete extension;
+
+				throw AL::Exception(
+					AL::Move(exception),
+					"Error loading '%s'",
+					file.GetCString()
+				);
+			}
+
+			if ((extension->extension = extension->extension_init(lua)) == nullptr)
+			{
+				extension->process_library.Unload();
+				extension->process.Close();
+
+				delete extension;
+
+				throw AL::Exception(
+					"Error initializing extension"
+				);
+			}
+
+			return extension;
+		}
+
+		static void UnloadExtension(Extension* extension)
+		{
+			if (IsInitialized())
+			{
+				extension->extension_deinit(extension->extension);
+
+				extension->process_library.Unload();
+				extension->process.Close();
+
+				delete extension;
+			}
 		}
 
 	private:

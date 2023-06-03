@@ -1,7 +1,8 @@
 require('APRS-IS');
 
-require('Extensions.Types');
 require('Extensions.Script');
+
+Script.LoadExtension('Extensions/Types.dll', 'Extensions.Types');
 
 local config =
 {

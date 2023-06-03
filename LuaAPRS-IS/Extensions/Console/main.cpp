@@ -1,4 +1,6 @@
-#include "Console.hpp"
+#define LUA_APRS_IS_EXTENSION
+
+#include "Extension.hpp"
 
 #include <AL/OS/Console.hpp>
 
@@ -75,3 +77,25 @@ bool        console_disable_quick_edit_mode()
 
 	return true;
 }
+
+LUA_APRS_IS_EXTENSION_INIT([](Extension& extension)
+{
+	LUA_APRS_IS_RegisterGlobalFunction(console_set_title);
+	LUA_APRS_IS_RegisterGlobalFunction(console_read);
+	LUA_APRS_IS_RegisterGlobalFunction(console_read_line);
+	LUA_APRS_IS_RegisterGlobalFunction(console_write);
+	LUA_APRS_IS_RegisterGlobalFunction(console_write_line);
+	LUA_APRS_IS_RegisterGlobalFunction(console_enable_quick_edit_mode);
+	LUA_APRS_IS_RegisterGlobalFunction(console_disable_quick_edit_mode);
+});
+
+LUA_APRS_IS_EXTENSION_DEINIT([](Extension& extension)
+{
+	LUA_APRS_IS_UnregisterGlobalFunction(console_set_title);
+	LUA_APRS_IS_UnregisterGlobalFunction(console_read);
+	LUA_APRS_IS_UnregisterGlobalFunction(console_read_line);
+	LUA_APRS_IS_UnregisterGlobalFunction(console_write);
+	LUA_APRS_IS_UnregisterGlobalFunction(console_write_line);
+	LUA_APRS_IS_UnregisterGlobalFunction(console_enable_quick_edit_mode);
+	LUA_APRS_IS_UnregisterGlobalFunction(console_disable_quick_edit_mode);
+});

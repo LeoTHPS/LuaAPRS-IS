@@ -1,6 +1,11 @@
 #pragma once
 #include <AL/Common.hpp>
 
+namespace APRS_IS
+{
+	struct Extension;
+};
+
 enum SCRIPT_EXIT_CODES : AL::int16
 {
 	SCRIPT_EXIT_CODE_SUCCESS,
@@ -12,9 +17,11 @@ enum SCRIPT_EXIT_CODES : AL::int16
 	SCRIPT_EXIT_CODE_SQLITE3_,
 };
 
-void      script_init();
-void      script_deinit();
+void                script_init();
+void                script_deinit();
 
-AL::int16 script_get_exit_code();
+AL::int16           script_get_exit_code();
+void                script_set_exit_code(AL::int16 value);
 
-void      script_set_exit_code(AL::int16 value);
+APRS_IS::Extension* script_load_extension(const char* path);
+void                script_unload_extension(APRS_IS::Extension* extension);

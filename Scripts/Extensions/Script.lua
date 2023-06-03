@@ -1,5 +1,21 @@
+require('Extensions.Types');
+
 Script =
 {
+	LoadExtension = function(path, api)
+		local extension = script_load_extension(tostring(path));
+
+		if extension ~= nil then
+			require(api);
+		end
+
+		return extension;
+	end,
+
+	UnloadExtension = function(extension)
+		script_unload_extension(extension);
+	end,
+
 	GetExitCode = function()
 		return script_get_exit_code();
 	end,

@@ -1,19 +1,25 @@
-RM           ?= rm -f
-CXX          ?= g++
+CP                    ?= cp -f
+RM                    ?= rm -f
+CXX                   ?= g++
+ZIP                   ?= zip -r -o
 
-SOURCE_FILES  = main.cpp API.cpp API_Extensions.cpp
-SOURCE_FILES += Extensions/Types.cpp
-SOURCE_FILES += Extensions/Mutex.cpp
-SOURCE_FILES += Extensions/Script.cpp
-SOURCE_FILES += Extensions/System.cpp
-SOURCE_FILES += Extensions/Thread.cpp
-SOURCE_FILES += Extensions/Console.cpp
-SOURCE_FILES += Extensions/Process.cpp
-SOURCE_FILES += Extensions/SQLite3.cpp
-OBJECT_FILES  = $(SOURCE_FILES:.cpp=.o)
+SOURCE_FILES           = main.cpp API.cpp API_Extensions.cpp
+SOURCE_FILES          += Extensions/Script.cpp
+OBJECT_FILES           = $(SOURCE_FILES:.cpp=.o)
 
-CPPFLAGS     += 
-CXXFLAGS     += -Wall -Wfatal-errors -g -std=c++20 -I. -I"$(AL_INCLUDE)" -I"$(LIB_APRS_IS_INCLUDE)"
+LDFLAGS               += -static
+CPPFLAGS              += 
+CXXFLAGS              += -Wall -Wfatal-errors -g -std=c++20 -I. -I"$(AL_INCLUDE)" -I"$(LIB_APRS_IS_INCLUDE)"
+
+EXTENSIONS             = $(wildcard Extensions/*)
+EXTENSIONS            := $(filter-out Extensions/Script.%, $(EXTENSIONS))
+
+SCRIPT_PATH           ?= ../Scripts
+SCRIPT_EXTENSION_PATH ?= $(SCRIPT_PATH)/Extensions
+
+PUBLISH_PATH          ?= ../LuaAPRS-IS.zip
+
+ENVIRONMENT_VARIABLES  = COMPILER=$(COMPILER) PLATFORM=$(PLATFORM) SCRIPT_PATH=../../$(SCRIPT_PATH) SCRIPT_EXTENSION_PATH=../../$(SCRIPT_EXTENSION_PATH)
 
 ifdef COMPILER
 	ifeq ($(COMPILER), GNU)
@@ -27,22 +33,52 @@ endif
 
 ifdef PLATFORM
 	ifeq ($(PLATFORM), LINUX)
-#		liblua5.4-dev libsqlite3-dev
+#		liblua5.4-dev
 
-		LDLIBS += -lpthread -llua5.4 -lsqlite3
+		LDLIBS += -lpthread -llua5.4
+
+		FILE_EXTENSION         =
+		ENVIRONMENT_VARIABLES += SCRIPT_EXTENSION_EXT=.so
 	endif
 
 	ifeq ($(PLATFORM), WINDOWS)
 		LDLIBS += -luser32 -lntdll -lkernel32 -lAdvapi32 -lshlwapi
 		LDLIBS += -lwsock32 -lws2_32 -lIphlpapi
-		LDLIBS += -llua -lsqlite3
+		LDLIBS += -llua
+
+		FILE_EXTENSION         = .exe
+		ENVIRONMENT_VARIABLES += SCRIPT_EXTENSION_EXT=.dll
 	endif
 endif
 
-.PHONY: clean
+.PHONY: build build_extensions install install_extensions uninstall uninstall_extensions clean clean_extensions publish
 
-LuaAPRS-IS: $(OBJECT_FILES)
+build: LuaAPRS-IS$(FILE_EXTENSION) build_extensions
+
+LuaAPRS-IS$(FILE_EXTENSION): $(OBJECT_FILES)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $^ -o $@ $(LDFLAGS) $(LDLIBS)
 
-clean:
+build_extensions:
+	$(foreach EXTENSION, $(EXTENSIONS), $(MAKE) -C $(EXTENSION) -e $(ENVIRONMENT_VARIABLES) &&) true
+
+install: install_extensions
+	$(CP) LuaAPRS-IS$(FILE_EXTENSION) $(SCRIPT_PATH)/LuaAPRS-IS$(FILE_EXTENSION)
+
+install_extensions:
+	$(foreach EXTENSION, $(EXTENSIONS), $(MAKE) -C $(EXTENSION) -e $(ENVIRONMENT_VARIABLES) install &&) true
+
+uninstall: uninstall_extensions
+	$(RM) $(SCRIPT_PATH)/LuaAPRS-IS$(FILE_EXTENSION)
+
+uninstall_extensions:
+	$(foreach EXTENSION, $(EXTENSIONS), $(MAKE) -C $(EXTENSION) -e $(ENVIRONMENT_VARIABLES) uninstall &&) true
+
+clean: clean_extensions
 	$(RM) $(OBJECT_FILES)
+
+clean_extensions:
+	$(foreach EXTENSION, $(EXTENSIONS), $(MAKE) -C $(EXTENSION) -e $(ENVIRONMENT_VARIABLES) clean &&) true
+
+publish: build install
+	$(RM) $(PUBLISH_PATH)
+	$(ZIP) $(PUBLISH_PATH) $(SCRIPT_PATH)
