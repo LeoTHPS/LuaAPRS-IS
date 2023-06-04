@@ -1,25 +1,27 @@
-CP                    ?= cp -f
-RM                    ?= rm -f
-CXX                   ?= g++
-ZIP                   ?= zip -r -o
+CP                     ?= cp -f
+RM                     ?= rm -f
+CXX                    ?= g++
+ZIP                    ?= zip -r -o
 
-SOURCE_FILES           = main.cpp API.cpp API_Extensions.cpp
-SOURCE_FILES          += Extensions/Script.cpp
-OBJECT_FILES           = $(SOURCE_FILES:.cpp=.o)
+SOURCE_FILES            = main.cpp API.cpp API_Extensions.cpp
+SOURCE_FILES           += Extensions/Script.cpp
+OBJECT_FILES            = $(SOURCE_FILES:.cpp=.o)
 
-LDFLAGS               += -static
-CPPFLAGS              += 
-CXXFLAGS              += -Wall -Wfatal-errors -g -std=c++20 -I. -I"$(AL_INCLUDE)" -I"$(LIB_APRS_IS_INCLUDE)"
+OPTIMIZATION_FLAGS     ?= -Os
 
-EXTENSIONS             = $(wildcard Extensions/*)
-EXTENSIONS            := $(filter-out Extensions/Script.%, $(EXTENSIONS))
+LDFLAGS                += -static
+CPPFLAGS               += 
+CXXFLAGS               += -Wall -Wfatal-errors $(OPTIMIZATION_FLAGS) -std=c++20 -I. -I"$(AL_INCLUDE)" -I"$(LIB_APRS_IS_INCLUDE)"
 
-SCRIPT_PATH           ?= ../Scripts
-SCRIPT_EXTENSION_PATH ?= $(SCRIPT_PATH)/Extensions
+EXTENSIONS              = $(wildcard Extensions/*)
+EXTENSIONS             := $(filter-out Extensions/Script.%, $(EXTENSIONS))
 
-PUBLISH_PATH          ?= ../LuaAPRS-IS.zip
+RELEASE_PATH           ?= ../Release
+RELEASE_EXTENSION_PATH ?= $(RELEASE_PATH)/Extensions
 
-ENVIRONMENT_VARIABLES  = COMPILER=$(COMPILER) PLATFORM=$(PLATFORM) SCRIPT_PATH=../../$(SCRIPT_PATH) SCRIPT_EXTENSION_PATH=../../$(SCRIPT_EXTENSION_PATH)
+PUBLISH_PATH           ?= ../LuaAPRS-IS.zip
+
+ENVIRONMENT_VARIABLES   = COMPILER=$(COMPILER) PLATFORM=$(PLATFORM) OPTIMIZATION_FLAGS=$(OPTIMIZATION_FLAGS) RELEASE_PATH=../../$(RELEASE_PATH) RELEASE_EXTENSION_PATH=../../$(RELEASE_EXTENSION_PATH)
 
 ifdef COMPILER
 	ifeq ($(COMPILER), GNU)
@@ -38,7 +40,7 @@ ifdef PLATFORM
 		LDLIBS += -lpthread -llua5.4
 
 		FILE_EXTENSION         =
-		ENVIRONMENT_VARIABLES += SCRIPT_EXTENSION_EXT=.so
+		ENVIRONMENT_VARIABLES += FILE_EXTENSION=.so
 	endif
 
 	ifeq ($(PLATFORM), WINDOWS)
@@ -47,7 +49,7 @@ ifdef PLATFORM
 		LDLIBS += -llua
 
 		FILE_EXTENSION         = .exe
-		ENVIRONMENT_VARIABLES += SCRIPT_EXTENSION_EXT=.dll
+		ENVIRONMENT_VARIABLES += FILE_EXTENSION=.dll
 	endif
 endif
 
@@ -62,13 +64,13 @@ build_extensions:
 	$(foreach EXTENSION, $(EXTENSIONS), $(MAKE) -C $(EXTENSION) -e $(ENVIRONMENT_VARIABLES) &&) true
 
 install: install_extensions
-	$(CP) LuaAPRS-IS$(FILE_EXTENSION) $(SCRIPT_PATH)/LuaAPRS-IS$(FILE_EXTENSION)
+	$(CP) LuaAPRS-IS$(FILE_EXTENSION) $(RELEASE_PATH)/LuaAPRS-IS$(FILE_EXTENSION)
 
 install_extensions:
 	$(foreach EXTENSION, $(EXTENSIONS), $(MAKE) -C $(EXTENSION) -e $(ENVIRONMENT_VARIABLES) install &&) true
 
 uninstall: uninstall_extensions
-	$(RM) $(SCRIPT_PATH)/LuaAPRS-IS$(FILE_EXTENSION)
+	$(RM) $(RELEASE_PATH)/LuaAPRS-IS$(FILE_EXTENSION)
 
 uninstall_extensions:
 	$(foreach EXTENSION, $(EXTENSIONS), $(MAKE) -C $(EXTENSION) -e $(ENVIRONMENT_VARIABLES) uninstall &&) true
@@ -81,4 +83,4 @@ clean_extensions:
 
 publish: build install
 	$(RM) $(PUBLISH_PATH)
-	$(ZIP) $(PUBLISH_PATH) $(SCRIPT_PATH)
+	$(ZIP) $(PUBLISH_PATH) $(RELEASE_PATH)

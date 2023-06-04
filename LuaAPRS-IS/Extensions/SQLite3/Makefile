@@ -7,7 +7,7 @@ OBJECT_FILES  = $(SOURCE_FILES:.cpp=.o)
 
 LDFLAGS      += -static -shared
 CPPFLAGS     += 
-CXXFLAGS     += -Wall -Wfatal-errors -g -std=c++20 -I. -I"$(AL_INCLUDE)" -I"$(LIB_APRS_IS_INCLUDE)" -I"../../"
+CXXFLAGS     += -Wall -Wfatal-errors $(OPTIMIZATION_FLAGS) -std=c++20 -I. -I"$(AL_INCLUDE)" -I"$(LIB_APRS_IS_INCLUDE)" -I"../../"
 
 ifdef COMPILER
 	ifeq ($(COMPILER), GNU)
@@ -34,16 +34,16 @@ endif
 
 .PHONY: clean install uninstall
 
-SQLite3$(SCRIPT_EXTENSION_EXT): $(OBJECT_FILES)
+SQLite3$(FILE_EXTENSION): $(OBJECT_FILES)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $^ -o $@ $(LDFLAGS) $(LDLIBS)
 
 clean:
 	$(RM) $(OBJECT_FILES)
 
 install:
-	$(CP) SQLite3.lua $(SCRIPT_EXTENSION_PATH)/SQLite3.lua
-	$(CP) SQLite3$(SCRIPT_EXTENSION_EXT) $(SCRIPT_EXTENSION_PATH)/SQLite3$(SCRIPT_EXTENSION_EXT)
+	$(CP) SQLite3.lua $(RELEASE_EXTENSION_PATH)/SQLite3.lua
+	$(CP) SQLite3$(FILE_EXTENSION) $(RELEASE_EXTENSION_PATH)/SQLite3$(FILE_EXTENSION)
 
 uninstall:
-	$(RM) $(SCRIPT_EXTENSION_PATH)/SQLite3.lua
-	$(RM) $(SCRIPT_EXTENSION_PATH)/SQLite3$(SCRIPT_EXTENSION_EXT)
+	$(RM) $(RELEASE_EXTENSION_PATH)/SQLite3.lua
+	$(RM) $(RELEASE_EXTENSION_PATH)/SQLite3$(FILE_EXTENSION)
