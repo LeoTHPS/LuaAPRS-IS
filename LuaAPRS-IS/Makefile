@@ -9,7 +9,6 @@ OBJECT_FILES            = $(SOURCE_FILES:.cpp=.o)
 
 OPTIMIZATION_FLAGS     ?= -Os
 
-LDFLAGS                += -static
 CPPFLAGS               += 
 CXXFLAGS               += -Wall -Wfatal-errors $(OPTIMIZATION_FLAGS) -std=c++20 -I. -I"$(AL_INCLUDE)" -I"$(LIB_APRS_IS_INCLUDE)"
 

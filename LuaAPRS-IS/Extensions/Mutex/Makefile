@@ -5,7 +5,7 @@ CXX          ?= g++
 SOURCE_FILES  = main.cpp
 OBJECT_FILES  = $(SOURCE_FILES:.cpp=.o)
 
-LDFLAGS      += -static -shared
+LDFLAGS      += -shared
 CPPFLAGS     += 
 CXXFLAGS     += -Wall -Wfatal-errors $(OPTIMIZATION_FLAGS) -std=c++20 -I. -I"$(AL_INCLUDE)" -I"$(LIB_APRS_IS_INCLUDE)" -I"../../"
 
