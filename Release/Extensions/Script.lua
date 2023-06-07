@@ -1,5 +1,3 @@
-require('Extensions.Types');
-
 Script =
 {
 	LoadExtension = function(path, api)
