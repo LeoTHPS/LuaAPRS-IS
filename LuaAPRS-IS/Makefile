@@ -62,7 +62,7 @@ LuaAPRS-IS$(FILE_EXTENSION): $(OBJECT_FILES)
 build_extensions:
 	$(foreach EXTENSION, $(EXTENSIONS), $(MAKE) -C $(EXTENSION) -e $(ENVIRONMENT_VARIABLES) &&) true
 
-install: install_extensions
+install: uninstall install_extensions
 	$(CP) LuaAPRS-IS$(FILE_EXTENSION) $(RELEASE_PATH)/LuaAPRS-IS$(FILE_EXTENSION)
 
 install_extensions:
