@@ -155,11 +155,11 @@ AL::uint32  _sqlite3_query_result_row_get_column_count(_sqlite3_query_result_row
 }
 const char* _sqlite3_query_result_row_get_column_name(_sqlite3_query_result_row* query_result_row, AL::uint32 index)
 {
-	return (query_result_row && (index < query_result_row->row->Columns.GetSize())) ? query_result_row->row->Columns[index].GetCString() : nullptr;
+	return (query_result_row && (index > 0) && (index <= query_result_row->row->Columns.GetSize())) ? query_result_row->row->Columns[index - 1].GetCString() : nullptr;
 }
 const char* _sqlite3_query_result_row_get_column_value(_sqlite3_query_result_row* query_result_row, AL::uint32 index)
 {
-	return (query_result_row && (index < query_result_row->row->Values.GetSize())) ? query_result_row->row->Values[index].GetCString() : nullptr;
+	return (query_result_row && (index > 0) && (index <= query_result_row->row->Values.GetSize())) ? query_result_row->row->Values[index - 1].GetCString() : nullptr;
 }
 
 LUA_APRS_IS_EXTENSION_INIT([](Extension& extension)
