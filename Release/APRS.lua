@@ -2,6 +2,10 @@ APRS =
 {
 	Packet =
 	{
+		Decode = function(string)
+			return aprs_packet_decode(tostring(string));
+		end,
+
 		IsMessage = function(packet)
 			return aprs_packet_is_message(packet);
 		end,

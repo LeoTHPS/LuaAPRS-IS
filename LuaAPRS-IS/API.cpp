@@ -238,6 +238,19 @@ bool                                       aprs_packet_is_position(aprs_packet* 
 	return packet->IsPosition();
 }
 
+aprs_packet*                               aprs_packet_decode(const char* string)
+{
+	auto packet = new aprs_packet();
+
+	if (!APRS::Packet::Decode(*packet, string))
+	{
+		delete packet;
+
+		return nullptr;
+	}
+
+	return packet;
+}
 aprs_packet*                               aprs_packet_init(const char* sender, const char* tocall, const char* digipath, const char* content)
 {
 	return new aprs_packet
@@ -437,7 +450,7 @@ void                                       aprs_position_set_symbol_table_key(ap
 	position->SymbolTableKey = *value;
 }
 
-void APRS_IS::API::RegisterGlobals()
+void APRS::IS::API::RegisterGlobals()
 {
 	APRS_IS_API_RegisterGlobalFunction(aprs_is_init);
 	APRS_IS_API_RegisterGlobalFunction(aprs_is_deinit);
@@ -456,6 +469,7 @@ void APRS_IS::API::RegisterGlobals()
 	APRS_IS_API_RegisterGlobalFunction(aprs_packet_is_message);
 	APRS_IS_API_RegisterGlobalFunction(aprs_packet_is_position);
 
+	APRS_IS_API_RegisterGlobalFunction(aprs_packet_decode);
 	APRS_IS_API_RegisterGlobalFunction(aprs_packet_init);
 	APRS_IS_API_RegisterGlobalFunction(aprs_packet_deinit);
 	APRS_IS_API_RegisterGlobalFunction(aprs_packet_get_igate);
@@ -490,6 +504,8 @@ void APRS_IS::API::RegisterGlobals()
 	APRS_IS_API_RegisterGlobalFunction(aprs_position_set_latitude);
 	APRS_IS_API_RegisterGlobalFunction(aprs_position_get_longitude);
 	APRS_IS_API_RegisterGlobalFunction(aprs_position_set_longitude);
+	APRS_IS_API_RegisterGlobalFunction(aprs_position_get_comment);
+	APRS_IS_API_RegisterGlobalFunction(aprs_position_set_comment);
 	APRS_IS_API_RegisterGlobalFunction(aprs_position_get_symbol_table);
 	APRS_IS_API_RegisterGlobalFunction(aprs_position_set_symbol_table);
 	APRS_IS_API_RegisterGlobalFunction(aprs_position_get_symbol_table_key);

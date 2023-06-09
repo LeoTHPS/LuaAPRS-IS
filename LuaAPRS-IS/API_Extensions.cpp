@@ -3,7 +3,7 @@
 #include "Extensions/Script.hpp"
 
 #define APRS_IS_API_DEFINE_Extension(__extension_name__, ...) void RegisterExtension_##__extension_name__(AL::Lua54::State& lua) __VA_ARGS__
-#define APRS_IS_API_RegisterExtension(__extension_name__)     RegisterExtension_##__extension_name__(lua)
+#define APRS_IS_API_RegisterExtension(__extension_name__)          RegisterExtension_##__extension_name__(lua)
 
 APRS_IS_API_DEFINE_Extension(Script,
 {
@@ -18,7 +18,7 @@ APRS_IS_API_DEFINE_Extension(Script,
 	APRS_IS_API_RegisterGlobalFunction(script_unload_extension);
 })
 
-void APRS_IS::API::RegisterExtensions()
+void APRS::IS::API::RegisterExtensions()
 {
 	APRS_IS_API_RegisterExtension(Script);
 }

@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
 	{
 		try
 		{
-			APRS_IS::API::Init();
+			APRS::IS::API::Init();
 		}
 		catch (AL::Exception& exception)
 		{
@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
 
 		try
 		{
-			if (!APRS_IS::API::LoadScript(argv[1], scriptExitCode))
+			if (!APRS::IS::API::LoadScript(argv[1], scriptExitCode))
 			{
 
 				throw AL::Exception(

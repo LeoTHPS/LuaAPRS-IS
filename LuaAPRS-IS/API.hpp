@@ -10,10 +10,10 @@
 #include "Extensions/Script.hpp"
 
 #define APRS_IS_API_GetGlobal(__variable__)                                   APRS_IS_API_GetGlobalEx(__variable__, #__variable__)
-#define APRS_IS_API_GetGlobalEx(__variable__, __variable_name__)              __variable__ = APRS_IS::API::GetGlobal(__variable_name__)
+#define APRS_IS_API_GetGlobalEx(__variable__, __variable_name__)              __variable__ = APRS::IS::API::GetGlobal(__variable_name__)
 
 #define APRS_IS_API_SetGlobal(__variable__)                                   APRS_IS_API_SetGlobalEx(__variable__, #__variable__)
-#define APRS_IS_API_SetGlobalEx(__variable__, __variable_name__)              APRS_IS::API::SetGlobal(__variable_name__, __variable__)
+#define APRS_IS_API_SetGlobalEx(__variable__, __variable_name__)              APRS::IS::API::SetGlobal(__variable_name__, __variable__)
 
 #define APRS_IS_API_RegisterGlobal(__variable__)                              APRS_IS_API_RegisterGlobalEx(__variable__, #__variable__)
 #define APRS_IS_API_RegisterGlobalEx(__variable__, __variable_name__)         lua.SetGlobal(__variable_name__, __variable__)
@@ -27,7 +27,7 @@
 #define APRS_IS_API_UnregisterGlobalFunction(__function__)                    APRS_IS_API_UnregisterGlobalFunctionEx(#__function__)
 #define APRS_IS_API_UnregisterGlobalFunctionEx(__function_name__)             lua.RemoveGlobal(__function_name__)
 
-namespace APRS_IS
+namespace APRS::IS
 {
 	struct Extension
 	{
