@@ -4,16 +4,18 @@ local date_time_format = '%m/%d/%Y %I:%M:%S %p';
 
 Console =
 {
+	ShowDateTimeByDefault = true,
+
 	SetTitle = function(value)
 		return console_set_title(tostring(value));
 	end,
 
 	ReadLine = function(module, prefix, include_date_time)
-		Mutex.Lock(Mutex.GetDefaultInstance());
-
 		if include_date_time == nil then
-			include_date_time = false;
+			include_date_time = Console.ShowDateTimeByDefault;
 		end
+
+		Mutex.Lock(Mutex.GetDefaultInstance());
 
 		if include_date_time then
 			console_write('[' .. os.date(date_time_format) .. '] ');
@@ -34,15 +36,23 @@ Console =
 		return value;
 	end,
 
-	WriteLine = function(module, value)
+	WriteLine = function(module, value, include_date_time)
+		if include_date_time == nil then
+			include_date_time = Console.ShowDateTimeByDefault;
+		end
+
 		Mutex.Lock(Mutex.GetDefaultInstance());
 
-		local date_time = os.date(date_time_format);
+		if include_date_time then
+			local date_time = os.date(date_time_format);
 
-		if not module or (module == '') then
-			console_write_line('[' .. date_time .. '] ' .. value);
+			if not module or (module == '') then
+				console_write_line('[' .. date_time .. '] ' .. value);
+			else
+				console_write_line('[' .. date_time .. '] [' .. module .. '] ' .. value);
+			end
 		else
-			console_write_line('[' .. date_time .. '] [' .. module .. '] ' .. value);
+			console_write_line(value);
 		end
 
 		Mutex.Unlock(Mutex.GetDefaultInstance());
