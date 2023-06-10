@@ -486,18 +486,18 @@ end
 
 function Outside.Private.FormatTimestampDeltaAsString(delta)
 	if delta < 60 then
-		return string.format('%.0f second%s', delta, (delta == 1) and '' or 's');
+		return string.format('%.0f second%s', delta, (delta < 2) and '' or 's');
 	elseif delta < 3600 then
 		local delta_minutes = delta / 60;
 		local delta_seconds = delta - (math.floor(delta_minutes) * 60);
 
-		return string.format('%.0f minute%s and %.0f second%s', delta_minutes, (delta_minutes == 1) and '' or 's', delta_seconds, (delta_seconds == 1) and '' or 's');
+		return string.format('%.0f minute%s and %.0f second%s', delta_minutes, (delta_minutes < 2) and '' or 's', delta_seconds, (delta_seconds < 2) and '' or 's');
 	end
 
 	local delta_hours   = delta / 3600;
 	local delta_minutes = (delta - (math.floor(delta_hours) * 3600)) / 60;
 
-	return string.format('%.0f hour%s and %.0f minute%s', delta_hours, (delta_hours == 1) and '' or 's', delta_minutes, (delta_minutes == 1) and '' or 's');
+	return string.format('%.0f hour%s and %.0f minute%s', delta_hours, (delta_hours < 2) and '' or 's', delta_minutes, (delta_minutes < 2) and '' or 's');
 end
 
 function Outside.Private.GetDistanceBetweenPoints(latitude1, longitude1, altitude1, latitude2, longitude2, altitude2)
