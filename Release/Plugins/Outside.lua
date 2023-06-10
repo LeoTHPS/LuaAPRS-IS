@@ -31,14 +31,10 @@ function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 	Outside.Private.Config.Database.Path         = database_path;
 
 	if station_list then
-		if Types.IsString(station_list) then
-			Outside.Private.Config.StationList = { station_list };
-		elseif Types.IsTable(station_list) then
-			Outside.Private.Config.StationList = station_list;
-		end
+		Outside.Private.Config.StationList = station_list;
 
-		for station_index, station in ipairs(Outside.Private.Config.StationList) do
-			Outside.Private.Config.APRS.IS.Filter = Outside.Private.Config.APRS.IS.Filter .. '/' .. station;
+		for station_callsign, station_name in pairs(station_list) do
+			Outside.Private.Config.APRS.IS.Filter = Outside.Private.Config.APRS.IS.Filter .. '/' .. station_callsign;
 		end
 	else
 		Outside.Private.Config.APRS.IS.Filter = 't/p';
@@ -66,8 +62,8 @@ function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 	end
 
 	if Outside.Private.RestoreMostRecentStationLocation() then
-		local timestamp, callsign, latitude, longitude, altitude, path, igate = Outside.GetMostRecentStationPosition();
-		local timestamp_delta                                                 = System.GetTimestamp() - timestamp;
+		local timestamp, name, callsign, latitude, longitude, altitude, path, igate = Outside.GetMostRecentStationPosition();
+		local timestamp_delta                                                       = System.GetTimestamp() - timestamp;
 
 		Console.WriteLine('Outside', string.format('Restored position of %s from %s ago', callsign, Outside.Private.FormatTimestampDeltaAsString(timestamp_delta)));
 	end
@@ -79,22 +75,22 @@ function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 			if packet_position then
 				local packet_sender = APRS.Packet.GetSender(packet);
 
-				local function update_station_position()
+				local function update_station_position(packet_sender_name)
 					local packet_path               = APRS.Packet.GetDigiPath(packet);
 					local packet_igate              = APRS.Packet.GetIGate(packet);
 					local packet_position_altitude  = APRS.Position.GetAltitude(packet_position);
 					local packet_position_latitude  = APRS.Position.GetLatitude(packet_position);
 					local packet_position_longitude = APRS.Position.GetLongitude(packet_position);
 
-					Outside.Private.SetStationPosition(System.GetTimestamp(), packet_sender, packet_position_latitude, packet_position_longitude, packet_position_altitude, packet_path, packet_igate);
+					Outside.Private.SetStationPosition(System.GetTimestamp(), packet_sender_name, packet_sender, packet_position_latitude, packet_position_longitude, packet_position_altitude, packet_path, packet_igate);
 				end
 
 				if not Outside.Private.Config.StationList then
-					update_station_position();
+					update_station_position(packet_sender);
 				else
-					for i, station in ipairs(Outside.Private.Config.StationList) do
-						if station == packet_sender then
-							update_station_position();
+					for station_callsign, station_name in pairs(Outside.Private.Config.StationList) do
+						if station_callsign == packet_sender then
+							update_station_position(station_name);
 							break;
 						end
 					end
@@ -105,8 +101,8 @@ function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 		end
 	end);
 
-	Outside.Events.RegisterEvent(Outside.Events.OnPositionChanged, function(station, path, igate, latitude, longitude, altitude)
-		Outside.Private.Storage.SetLastPosition(station, path, igate, latitude, longitude, altitude);
+	Outside.Events.RegisterEvent(Outside.Events.OnPositionChanged, function(station, station_name, path, igate, latitude, longitude, altitude)
+		Outside.Private.Storage.SetLastPosition(station_name, station, path, igate, latitude, longitude, altitude);
 
 		if not Outside.Private.SaveStoragePending then
 			Outside.Private.SaveStoragePending = true;
@@ -207,16 +203,16 @@ function Outside.SetPosition(latitude, longitude, altitude)
 	};
 end
 
--- @return timestamp, callsign, latitude, longitude, altitude, path, igate
+-- @return timestamp, name, callsign, latitude, longitude, altitude, path, igate
 function Outside.GetMostRecentStationPosition()
-	if not Outside.Private.Stations then
-		return 0, nil, 0, 0, 0, nil, nil;
+	if not Outside.Private.StationPositions then
+		return 0, nil, nil, 0, 0, 0, nil, nil;
 	end
 
 	local most_recent_station_callsign  = nil;
 	local most_recent_station_timestamp = 0;
 
-	for station_callsign, station in pairs(Outside.Private.Stations) do
+	for station_callsign, station in pairs(Outside.Private.StationPositions) do
 		if (System.GetTimestamp() - station.Timestamp) <= Outside.Private.Config.PositionTTL then
 			if station.Timestamp > most_recent_station_timestamp then
 				most_recent_station_callsign  = station_callsign;
@@ -225,23 +221,24 @@ function Outside.GetMostRecentStationPosition()
 		end
 	end
 
-	local station = Outside.Private.Stations[most_recent_station_callsign];
+	local station = Outside.Private.StationPositions[most_recent_station_callsign];
 
 	if not station then
-		return 0, nil, 0, 0, 0, nil, nil;
+		return 0, nil, nil, 0, 0, 0, nil, nil;
 	end
 
-	return station.Timestamp, most_recent_station_callsign, tonumber(station.Latitude), tonumber(station.Longitude), tonumber(station.Altitude), tostring(station.Path), tostring(station.IGate);
+	return station.Timestamp, tostring(station.Name), tostring(most_recent_station_callsign), tonumber(station.Latitude), tonumber(station.Longitude), tonumber(station.Altitude), tostring(station.Path), tostring(station.IGate);
 end
 
-function Outside.Private.SetStationPosition(timestamp, callsign, latitude, longitude, altitude, path, igate)
-	if not Outside.Private.Stations then
-		Outside.Private.Stations = {};
+function Outside.Private.SetStationPosition(timestamp, name, callsign, latitude, longitude, altitude, path, igate)
+	if not Outside.Private.StationPositions then
+		Outside.Private.StationPositions = {};
 	end
 
-	Outside.Private.Stations[callsign] =
+	Outside.Private.StationPositions[callsign] =
 	{
 		Timestamp = timestamp,
+		Name      = name,
 		Path      = path,
 		IGate     = igate,
 		Altitude  = altitude,
@@ -249,7 +246,7 @@ function Outside.Private.SetStationPosition(timestamp, callsign, latitude, longi
 		Longitude = longitude
 	};
 
-	Outside.Events.ExecuteEvent(Outside.Events.OnPositionChanged, callsign, path, igate, latitude, longitude, altitude);
+	Outside.Events.ExecuteEvent(Outside.Events.OnPositionChanged, callsign, name, path, igate, latitude, longitude, altitude);
 end
 
 -- @return header, message, distance_divider
@@ -413,8 +410,8 @@ function Outside.Private.UpdateIdleState()
 		local discord_party_size              = 1;
 		local discord_party_size_max          = 0;
 
-		local latitude, longitude, altitude                                                                                           = Outside.GetPosition();
-		local station_timestamp, station_callsign, station_latitude, station_longitude, station_altitude, station_path, station_igate = Outside.GetMostRecentStationPosition();
+		local latitude, longitude, altitude                                                                                                         = Outside.GetPosition();
+		local station_timestamp, station_name, station_callsign, station_latitude, station_longitude, station_altitude, station_path, station_igate = Outside.GetMostRecentStationPosition();
 
 		if station_timestamp == 0 then
 			discord_header, discord_message = Outside.GetDefaultIdleMessage();
@@ -433,7 +430,7 @@ function Outside.Private.UpdateIdleState()
 			local path_icon_station, path_icon, path_icon_comment = Outside.Private.GetStationPathIcon(station_path);
 
 			discord_message         = string.format(idle_message, station_distance / distance_divider);
-			discord_icon_big_text   = string.format('Position updated %s ago', Outside.Private.FormatTimestampDeltaAsString(System.GetTimestamp() - station_timestamp));
+			discord_icon_big_text   = string.format('Position updated %s ago by %s', Outside.Private.FormatTimestampDeltaAsString(System.GetTimestamp() - station_timestamp), station_name);
 			discord_icon_small      = path_icon or 'aprs_icon';
 			discord_icon_small_text = path_icon_comment and string.format(path_icon_comment, station_igate) or string.format('%s via %s', station_path, station_igate);
 		end
@@ -466,13 +463,13 @@ function Outside.Private.LeaveIdleState()
 end
 
 function Outside.Private.RestoreMostRecentStationLocation()
-	local timestamp, station, path, igate, latitude, longitude, altitude = Outside.Private.Storage.GetLastPosition();
+	local timestamp, name, station, path, igate, latitude, longitude, altitude = Outside.Private.Storage.GetLastPosition();
 
 	if not station then
 		return false;
 	end
 
-	Outside.Private.SetStationPosition(timestamp, station, latitude, longitude, altitude, path, igate);
+	Outside.Private.SetStationPosition(timestamp, name, station, latitude, longitude, altitude, path, igate);
 
 	return true;
 end
@@ -518,7 +515,7 @@ Outside.Events.OnDiscordError          = {}; -- function(error_code, message)
 Outside.Events.OnDiscordConnected      = {}; -- function(user_id, username, discriminator)
 Outside.Events.OnDiscordDisconnected   = {}; -- function(error_code, message)
 Outside.Events.OnReceivePacket         = {}; -- function(packet)
-Outside.Events.OnPositionChanged       = {}; -- function(station, path, igate, latitude, longitude, altitude)
+Outside.Events.OnPositionChanged       = {}; -- function(station, station_name, path, igate, latitude, longitude, altitude)
 Outside.Private.Events                 = {};
 Outside.Private.Events.OnDoSaveStorage = {}; -- function()
 
@@ -855,14 +852,15 @@ function Outside.Private.Storage.Set(key, value)
 	Outside.Private.Storage.Private[key] = value;
 end
 
--- @return timestamp, station, path, igate, latitude, longitude, altitude
+-- @return timestamp, name, station, path, igate, latitude, longitude, altitude
 function Outside.Private.Storage.GetLastPosition()
 	local last_position = Outside.Private.Storage.Get('last_position');
 
 	if not last_position then
-		return 0, nil, nil, nil, 0, 0, 0;
+		return 0, nil, nil, nil, nil, 0, 0, 0;
 	end
 
+	local last_position_name      = Outside.Private.Storage.Get('last_position_name');
 	local last_position_path      = Outside.Private.Storage.Get('last_position_path');
 	local last_position_igate     = Outside.Private.Storage.Get('last_position_igate');
 	local last_position_station   = Outside.Private.Storage.Get('last_position_station');
@@ -871,11 +869,12 @@ function Outside.Private.Storage.GetLastPosition()
 	local last_position_longitude = Outside.Private.Storage.Get('last_position_longitude');
 	local last_position_timestamp = Outside.Private.Storage.Get('last_position_timestamp');
 
-	return tonumber(last_position_timestamp), tostring(last_position_station), tostring(last_position_path), tostring(last_position_igate), tonumber(last_position_latitude), tonumber(last_position_longitude), tonumber(last_position_altitude);
+	return tonumber(last_position_timestamp), tostring(last_position_name), tostring(last_position_station), tostring(last_position_path), tostring(last_position_igate), tonumber(last_position_latitude), tonumber(last_position_longitude), tonumber(last_position_altitude);
 end
 
-function Outside.Private.Storage.SetLastPosition(station, path, igate, latitude, longitude, altitude)
+function Outside.Private.Storage.SetLastPosition(name, station, path, igate, latitude, longitude, altitude)
 	Outside.Private.Storage.Set('last_position',           true);
+	Outside.Private.Storage.Set('last_position_name',      tostring(name));
 	Outside.Private.Storage.Set('last_position_path',      tostring(path));
 	Outside.Private.Storage.Set('last_position_igate',     tostring(igate));
 	Outside.Private.Storage.Set('last_position_station',   tostring(station));
