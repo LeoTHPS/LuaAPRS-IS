@@ -125,12 +125,55 @@ function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 		end
 	end);
 
+	Outside.Events.RegisterEvent(Outside.Private.Events.OnDoUpdateDiscord, function()
+		if Outside.Private.IsIdle() then
+			local discord_header                  = nil;
+			local discord_message                 = nil;
+			local discord_icon_big                = ((tonumber(os.date('%H')) >= 6) and (tonumber(os.date('%H')) < 21)) and 'outside_day' or 'outside_night';
+			local discord_icon_big_text           = nil;
+			local discord_icon_small              = nil;
+			local discord_icon_small_text         = nil;
+			local discord_party_size              = 1;
+			local discord_party_size_max          = 0;
+	
+			local latitude, longitude, altitude                                                                                                         = Outside.GetPosition();
+			local station_timestamp, station_name, station_callsign, station_latitude, station_longitude, station_altitude, station_path, station_igate = Outside.GetMostRecentStationPosition();
+	
+			if station_timestamp == 0 then
+				discord_header, discord_message = Outside.GetDefaultIdleMessage();
+			else
+				local station_distance                                    = Outside.Private.GetDistanceBetweenPoints(latitude, longitude, altitude, station_latitude, station_longitude, station_altitude);
+				local idle_message_header, idle_message, distance_divider = Outside.Private.GetIdleMessageByPosition(station_latitude, station_longitude);
+	
+				if not idle_message_header or not idle_message then
+					idle_message_header, idle_message, distance_divider = Outside.Private.GetIdleMessageByDistance(station_distance);
+				end
+	
+				if not idle_message_header or not idle_message then
+					idle_message_header, idle_message, distance_divider = Outside.GetDefaultIdleMessage();
+				end
+	
+				local path_icon_station, path_icon, path_icon_comment = Outside.Private.GetStationPathIcon(station_path);
+	
+				discord_message         = string.format(idle_message, station_distance / distance_divider);
+				discord_icon_big_text   = string.format('Position updated %s ago by %s', Outside.Private.FormatTimestampDeltaAsString(System.GetTimestamp() - station_timestamp), station_name);
+				discord_icon_small      = path_icon or 'aprs_icon';
+				discord_icon_small_text = path_icon_comment and string.format(path_icon_comment, station_igate) or string.format('%s via %s', station_path, station_igate);
+			end
+	
+			Outside.Private.Discord.RichPresence.Update(discord_header, discord_message, Outside.Private.IdleTimestamp, 0, discord_icon_big, discord_icon_big_text, discord_icon_small, discord_icon_small_text, discord_party_size, discord_party_size_max);
+			Outside.Private.Discord.RichPresence.Poll();
+
+			Outside.Events.ScheduleEvent(Outside.Private.Events.OnDoUpdateDiscord, 1);
+		end
+	end);
+
 	return true;
 end
 
 function Outside.Run(tick_rate)
 	if not tick_rate then
-		tick_rate = 1;
+		tick_rate = 5;
 	end
 
 	if not Outside.Private.Database.IsOpen() then
@@ -404,45 +447,6 @@ function Outside.Private.UpdateIdleState()
 	elseif System.GetIdleTime() < Outside.Private.Config.MinIdleTime then
 		Outside.Private.LeaveIdleState();
 	end
-
-	if Outside.Private.IsIdle() then
-		local discord_header                  = nil;
-		local discord_message                 = nil;
-		local discord_icon_big                = ((tonumber(os.date('%H')) >= 6) and (tonumber(os.date('%H')) < 21)) and 'outside_day' or 'outside_night';
-		local discord_icon_big_text           = nil;
-		local discord_icon_small              = nil;
-		local discord_icon_small_text         = nil;
-		local discord_party_size              = 1;
-		local discord_party_size_max          = 0;
-
-		local latitude, longitude, altitude                                                                                                         = Outside.GetPosition();
-		local station_timestamp, station_name, station_callsign, station_latitude, station_longitude, station_altitude, station_path, station_igate = Outside.GetMostRecentStationPosition();
-
-		if station_timestamp == 0 then
-			discord_header, discord_message = Outside.GetDefaultIdleMessage();
-		else
-			local station_distance                                    = Outside.Private.GetDistanceBetweenPoints(latitude, longitude, altitude, station_latitude, station_longitude, station_altitude);
-			local idle_message_header, idle_message, distance_divider = Outside.Private.GetIdleMessageByPosition(station_latitude, station_longitude);
-
-			if not idle_message_header or not idle_message then
-				idle_message_header, idle_message, distance_divider = Outside.Private.GetIdleMessageByDistance(station_distance);
-			end
-
-			if not idle_message_header or not idle_message then
-				idle_message_header, idle_message, distance_divider = Outside.GetDefaultIdleMessage();
-			end
-
-			local path_icon_station, path_icon, path_icon_comment = Outside.Private.GetStationPathIcon(station_path);
-
-			discord_message         = string.format(idle_message, station_distance / distance_divider);
-			discord_icon_big_text   = string.format('Position updated %s ago by %s', Outside.Private.FormatTimestampDeltaAsString(System.GetTimestamp() - station_timestamp), station_name);
-			discord_icon_small      = path_icon or 'aprs_icon';
-			discord_icon_small_text = path_icon_comment and string.format(path_icon_comment, station_igate) or string.format('%s via %s', station_path, station_igate);
-		end
-
-		Outside.Private.Discord.RichPresence.Update(discord_header, discord_message, Outside.Private.IdleTimestamp, 0, discord_icon_big, discord_icon_big_text, discord_icon_small, discord_icon_small_text, discord_party_size, discord_party_size_max);
-		Outside.Private.Discord.RichPresence.Poll();
-	end
 end
 
 function Outside.Private.EnterIdleState()
@@ -455,6 +459,7 @@ function Outside.Private.EnterIdleState()
 	end
 
 	Outside.Events.ExecuteEvent(Outside.Events.OnEnterIdleState);
+	Outside.Events.ExecuteEvent(Outside.Private.Events.OnDoUpdateDiscord);
 
 	return true;
 end
@@ -513,16 +518,17 @@ function Outside.Private.GetDistanceBetweenPoints(latitude1, longitude1, altitud
 	return ((distance * 6371) * 3280.84) + distance_z;
 end
 
-Outside.Events                         = {};
-Outside.Events.OnEnterIdleState        = {}; -- function()
-Outside.Events.OnLeaveIdleState        = {}; -- function()
-Outside.Events.OnDiscordError          = {}; -- function(error_code, message)
-Outside.Events.OnDiscordConnected      = {}; -- function(user_id, username, discriminator)
-Outside.Events.OnDiscordDisconnected   = {}; -- function(error_code, message)
-Outside.Events.OnReceivePacket         = {}; -- function(packet)
-Outside.Events.OnPositionChanged       = {}; -- function(station, station_name, path, igate, latitude, longitude, altitude)
-Outside.Private.Events                 = {};
-Outside.Private.Events.OnDoSaveStorage = {}; -- function()
+Outside.Events                           = {};
+Outside.Events.OnEnterIdleState          = {}; -- function()
+Outside.Events.OnLeaveIdleState          = {}; -- function()
+Outside.Events.OnDiscordError            = {}; -- function(error_code, message)
+Outside.Events.OnDiscordConnected        = {}; -- function(user_id, username, discriminator)
+Outside.Events.OnDiscordDisconnected     = {}; -- function(error_code, message)
+Outside.Events.OnReceivePacket           = {}; -- function(packet)
+Outside.Events.OnPositionChanged         = {}; -- function(station, station_name, path, igate, latitude, longitude, altitude)
+Outside.Private.Events                   = {};
+Outside.Private.Events.OnDoSaveStorage   = {}; -- function()
+Outside.Private.Events.OnDoUpdateDiscord = {}; -- function()
 
 function Outside.Events.ExecuteEvent(event, ...)
 	for event_index, event_callback in ipairs(event) do
