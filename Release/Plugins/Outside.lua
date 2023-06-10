@@ -37,14 +37,14 @@ function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 			Outside.Private.Config.APRS.IS.Filter = Outside.Private.Config.APRS.IS.Filter .. '/' .. station_callsign;
 		end
 	else
-		Outside.Private.Config.APRS.IS.Filter = 't/p';
-
 		Console.WriteLine('Outside', 'Warning: No station list defined - *ALL STATIONS* will be accepted');
 
 		if string.lower(Console.ReadLine('Outside', 'Are you sure you want to unleash the spam? Y/N')) ~= 'y' then
 			Console.WriteLine('Outside', 'Good choice.');
 			return;
 		end
+
+		Outside.Private.Config.APRS.IS.Filter = 't/p';
 	end
 
 	if not Outside.Private.Database.Open(Outside.Private.Config.Database.Path) then
