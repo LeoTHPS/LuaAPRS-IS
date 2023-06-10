@@ -16,6 +16,8 @@ APRS_IS_API_DEFINE_Extension(Script,
 
 	APRS_IS_API_RegisterGlobalFunction(script_load_extension);
 	APRS_IS_API_RegisterGlobalFunction(script_unload_extension);
+
+	APRS_IS_API_RegisterGlobalFunction(script_enter_loop);
 })
 
 void APRS::IS::API::RegisterExtensions()

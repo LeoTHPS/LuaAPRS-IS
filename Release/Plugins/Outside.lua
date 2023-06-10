@@ -5,7 +5,6 @@ require('Extensions.Script');
 Script.LoadExtension('Extensions/Mutex.dll',   'Extensions.Mutex');
 Script.LoadExtension('Extensions/Types.dll',   'Extensions.Types');
 Script.LoadExtension('Extensions/System.dll',  'Extensions.System');
-Script.LoadExtension('Extensions/Thread.dll',  'Extensions.Thread');
 Script.LoadExtension('Extensions/Console.dll', 'Extensions.Console');
 Script.LoadExtension('Extensions/Discord.dll', 'Extensions.Discord');
 Script.LoadExtension('Extensions/SQLite3.dll', 'Extensions.SQLite3');
@@ -75,7 +74,7 @@ function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 		if APRS.Packet.IsPosition(packet) then
 			local packet_position = APRS.Position.Decode(packet);
 
-			if packet_position ~= nil then
+			if packet_position then
 				local packet_sender = APRS.Packet.GetSender(packet);
 
 				local function update_station_position()
@@ -126,7 +125,11 @@ function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 	return true;
 end
 
-function Outside.Run()
+function Outside.Run(tick_rate)
+	if not tick_rate then
+		tick_rate = 1;
+	end
+
 	if not Outside.Private.Database.IsOpen() then
 		Console.WriteLine('Outside.Database', 'Database not open');
 
@@ -151,7 +154,12 @@ function Outside.Run()
 
 	APRS.IS.SetBlocking(Outside.Private.APRS.IS.Handle, false);
 
-	while APRS.IS.IsConnected(Outside.Private.APRS.IS.Handle) do
+	Script.Loop(tick_rate, function(delta_ms)
+		if not Outside.Private.APRS.IS.IsConnected() then
+			Console.WriteLine('Outside.APRS.IS', 'Connection closed');
+			return false;
+		end
+
 		repeat
 			local aprs_is_would_block, aprs_packet = Outside.Private.APRS.IS.ReceivePacket();
 
@@ -163,10 +171,8 @@ function Outside.Run()
 		Outside.Private.UpdateIdleState();
 		Outside.Events.ExecuteScheduledEvents();
 
-		Thread.Sleep(1000);
-	end
-
-	Console.WriteLine('Outside.APRS.IS', 'Connection closed');
+		return true;
+	end);
 
 	Outside.Private.LeaveIdleState();
 
@@ -183,7 +189,7 @@ end
 
 -- @return latitude, longitude, altitude
 function Outside.GetPosition()
-	if Outside.Private.Position ~= nil then
+	if Outside.Private.Position then
 		return Outside.Private.Position.Latitude, Outside.Private.Position.Longitude, Outside.Private.Position.Altitude;
 	end
 
@@ -362,7 +368,7 @@ function Outside.Private.GetStationPathIcon(path)
 	for station in string.gmatch(path, '[^,]+') do
 		local icon = Outside.Private.StationPathIcons[station];
 
-		if icon ~= nil then
+		if icon then
 			return station, tostring(icon.Icon), tostring(icon.Comment);
 		end
 	end

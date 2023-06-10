@@ -14,6 +14,10 @@ Script =
 		script_unload_extension(extension);
 	end,
 
+	Loop = function(tick_rate, callback)
+		script_enter_loop(tonumber(tick_rate), callback);
+	end,
+
 	GetExitCode = function()
 		return script_get_exit_code();
 	end,
