@@ -19,7 +19,7 @@ if Outside.Init('N0CALL', 00000, 'WIDE1-1', 'noam.aprs2.net', 14580, 10 * 60, 48
 	end);
 
 	Outside.Events.RegisterEvent(Outside.Events.OnLeaveIdleState, function()
-		Console.WriteLine(nil, 'Left idle state');
+		Console.WriteLine(nil, 'Exited idle state');
 	end);
 
 	Outside.Events.RegisterEvent(Outside.Events.OnPositionChanged, function(station, path, igate, latitude, longitude, altitude)
