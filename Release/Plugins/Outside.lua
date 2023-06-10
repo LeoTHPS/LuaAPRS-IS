@@ -42,6 +42,8 @@ function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 		end
 	else
 		Outside.Private.Config.APRS.IS.Filter = 't/p';
+
+		Console.WriteLine('Outside', 'Warning: No station list defined - *ALL STATIONS* will be accepted');
 	end
 
 	if not Outside.Private.Database.Open(Outside.Private.Config.Database.Path) then
