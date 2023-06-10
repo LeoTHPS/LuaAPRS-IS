@@ -35,10 +35,10 @@ void                 script_unload_extension(APRS::IS::Extension* extension)
 		APRS::IS::API::UnloadExtension(extension);
 }
 
-void                 script_enter_loop(AL::uint32 tickRate, script_loop_on_update_callback callback)
+void                 script_enter_loop(AL::uint32 tick_rate, script_loop_on_update_callback callback)
 {
 	AL::Game::Loop::Run(
-		tickRate,
+		tick_rate,
 		[&callback](AL::TimeSpan _delta)
 		{
 			return callback(_delta.ToMilliseconds());

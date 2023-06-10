@@ -31,4 +31,4 @@ void                 script_set_exit_code(AL::int16 value);
 APRS::IS::Extension* script_load_extension(const char* path);
 void                 script_unload_extension(APRS::IS::Extension* extension);
 
-void                 script_enter_loop(AL::uint32 tickRate, script_loop_on_update_callback callback);
+void                 script_enter_loop(AL::uint32 tick_rate, script_loop_on_update_callback callback);
