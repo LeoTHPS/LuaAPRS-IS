@@ -154,7 +154,8 @@ function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 				end
 	
 				local path_icon_station, path_icon, path_icon_comment = Outside.Private.GetStationPathIcon(station_path);
-	
+
+				discord_header          = idle_message_header;
 				discord_message         = string.format(idle_message, station_distance / distance_divider);
 				discord_icon_big_text   = string.format('Position updated %s ago via %s', Outside.Private.FormatTimestampDeltaAsString(System.GetTimestamp() - station_timestamp), station_name);
 				discord_icon_small      = path_icon or 'aprs_icon';
