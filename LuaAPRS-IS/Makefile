@@ -15,7 +15,7 @@ CXXFLAGS               += -Wall -Wfatal-errors $(OPTIMIZATION_FLAGS) -std=c++20 
 EXTENSIONS              = $(wildcard Extensions/*)
 EXTENSIONS             := $(filter-out Extensions/Script.%, $(EXTENSIONS))
 
-RELEASE_PATH           ?= ../Release
+RELEASE_PATH           ?= ../Build
 RELEASE_EXTENSION_PATH ?= $(RELEASE_PATH)/Extensions
 
 PUBLISH_PATH           ?= ../LuaAPRS-IS.zip
