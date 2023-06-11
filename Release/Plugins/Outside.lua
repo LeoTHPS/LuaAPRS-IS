@@ -183,14 +183,10 @@ function Outside.Run(tick_rate)
 		return false;
 	end
 
-	Outside.Private.APRS.IS.Handle = APRS.IS.Init(Outside.Private.Config.APRS.Callsign, Outside.Private.Config.APRS.IS.Passcode, Outside.Private.Config.APRS.IS.Filter, Outside.Private.Config.APRS.Path);
-
-	if not APRS.IS.Connect(Outside.Private.APRS.IS.Handle, Outside.Private.Config.APRS.IS.Host, Outside.Private.Config.APRS.IS.Port) then
+	if not Outside.Private.APRS.IS.Connect(Outside.Private.Config.APRS.IS.Host, Outside.Private.Config.APRS.IS.Port, Outside.Private.Config.APRS.Callsign, Outside.Private.Config.APRS.IS.Passcode, Outside.Private.Config.APRS.Path, Outside.Private.Config.APRS.IS.Filter) then
 		Console.WriteLine('Outside.APRS.IS', 'Connection failed');
 
 		Outside.Private.Database.Close();
-
-		APRS.IS.Deinit(Outside.Private.APRS.IS.Handle);
 
 		Script.SetExitCode(Script.ExitCodes.APRS.IS.ConnectionFailed);
 
@@ -198,8 +194,6 @@ function Outside.Run(tick_rate)
 	end
 
 	Console.WriteLine('Outside.APRS.IS', 'Connected to ' .. Outside.Private.Config.APRS.IS.Host .. ':' .. Outside.Private.Config.APRS.IS.Port .. ' as ' .. Outside.Private.Config.APRS.Callsign);
-
-	APRS.IS.SetBlocking(Outside.Private.APRS.IS.Handle, false);
 
 	Script.Loop(tick_rate, function(delta_ms)
 		if not Outside.Private.APRS.IS.IsConnected() then
@@ -223,24 +217,24 @@ function Outside.Run(tick_rate)
 
 	Outside.Private.LeaveIdleState();
 
+	Outside.Private.APRS.IS.Disconnect();
+
 	if not Outside.Private.Storage.Save() then
 		Console.WriteLine('Outside', 'Error saving storage');
 	end
 
 	Outside.Private.Database.Close();
 
-	APRS.IS.Deinit(Outside.Private.APRS.IS.Handle);
-
 	return true;
 end
 
 -- @return latitude, longitude, altitude
 function Outside.GetPosition()
-	if Outside.Private.Position then
-		return Outside.Private.Position.Latitude, Outside.Private.Position.Longitude, Outside.Private.Position.Altitude;
+	if not Outside.Private.Position then
+		return 0, 0, 0;
 	end
 
-	return 0, 0, 0;
+	return Outside.Private.Position.Latitude, Outside.Private.Position.Longitude, Outside.Private.Position.Altitude;
 end
 
 function Outside.SetPosition(latitude, longitude, altitude)
@@ -476,7 +470,7 @@ end
 function Outside.Private.RestoreMostRecentStationLocation()
 	local timestamp, name, station, path, igate, latitude, longitude, altitude = Outside.Private.Storage.GetLastPosition();
 
-	if not station then
+	if not station or ((System.GetTimestamp() - timestamp) > Outside.Private.Config.PositionTTL) then
 		return false;
 	end
 
