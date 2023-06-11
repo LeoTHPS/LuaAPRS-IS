@@ -111,7 +111,7 @@ function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 
 		if not Outside.Private.SaveStoragePending then
 			Outside.Private.SaveStoragePending = true;
-			Outside.Events.ScheduleEvent(Outside.Private.Events.OnDoSaveStorage, 3);
+			Outside.Events.ScheduleEvent(Outside.Private.Events.OnDoSaveStorage, 1);
 		end
 	end);
 
