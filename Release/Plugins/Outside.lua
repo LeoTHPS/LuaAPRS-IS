@@ -9,8 +9,9 @@ Script.LoadExtension('Extensions/Console.dll', 'Extensions.Console');
 Script.LoadExtension('Extensions/Discord.dll', 'Extensions.Discord');
 Script.LoadExtension('Extensions/SQLite3.dll', 'Extensions.SQLite3');
 
-Outside         = {};
-Outside.Private = {};
+Outside          = {};
+Outside.Private  = {};
+Outside.INFINITE = 0x7FFFFFFFFFFFFFFF;
 
 function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, aprs_is_port, min_idle_time, position_ttl, database_path, station_list)
 	Outside.Private.Config                       = {};
@@ -340,19 +341,29 @@ function Outside.Private.GetIdleMessageByPosition(latitude, longitude)
 		return nil, nil, 1;
 	end
 
-	local nearest_position_index = 0;
-	local nearest_position_delta = 0;
+	local nearest_position_index                = 0;
+	local nearest_position_distance_delta       = 0;
+	local nearest_position_distance_is_infinite = false;
 
 	for i, idle_message in ipairs(Outside.Private.IdleMessagesByPosition) do
 		local idle_message_distance = Outside.Private.GetDistanceBetweenPoints(latitude, longitude, 0, idle_message.Latitude, idle_message.Longitude, 0);
 
-		if idle_message_distance <= idle_message.Radius then
-			local idle_message_distance_delta = idle_message.Radius - idle_message_distance;
-
-			if (idle_message_distance_delta < nearest_position_delta) or (nearest_position_index == 0) then
-				nearest_position_index = i;
-				nearest_position_delta = idle_message_distance_delta;
+		if not nearest_position_distance_is_infinite then
+			if idle_message_distance == Outside.INFINITE then
+				nearest_position_index                = i;
+				nearest_position_distance_delta       = idle_message_distance;
+				nearest_position_distance_is_infinite = true;
+			elseif idle_message_distance <= idle_message.Radius then
+				local idle_message_distance_delta = idle_message.Radius - idle_message_distance;
+	
+				if (idle_message_distance_delta < nearest_position_distance_delta) or (nearest_position_index == 0) then
+					nearest_position_index          = i;
+					nearest_position_distance_delta = idle_message_distance_delta;
+				end
 			end
+		elseif idle_message_distance < nearest_position_distance_delta then
+			nearest_position_index          = i;
+			nearest_position_distance_delta = idle_message_distance;
 		end
 	end
 
