@@ -4,7 +4,7 @@ Script.LoadExtension('Extensions/Discord.dll', 'Extensions.Discord');
 
 Outside          = {};
 Outside.Private  = {};
-Outside.INFINITE = 0x7FFFFFFFFFFFFFFF;
+Outside.INFINITE = Gateway.INFINITE;
 
 Outside.Events                           = {};
 Outside.Events.OnEnterIdleState          = {}; -- function()
