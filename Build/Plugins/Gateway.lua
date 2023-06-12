@@ -87,7 +87,7 @@ function Gateway.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 			Console.WriteLine('Gateway', 'Error saving storage');
 		end
 
-		Gateway.Events.ScheduleEvent(Gateway.Events.Private.SaveStorage, 30);
+		Gateway.Events.ScheduleEvent(Gateway.Private.Events.SaveStorage, 30);
 	end)
 
 	return true;
