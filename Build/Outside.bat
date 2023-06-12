@@ -14,8 +14,6 @@ if %errorlevel% == %EXIT_CODE_SUCCESS% (
 	goto run_once
 )
 
-echo %errorlevel%
-
 if %errorlevel% == %SCRIPT_EXIT_CODE_APRS_IS_CONNECTION_CLOSED% (
 	timeout /t 3 /nobreak
 	goto run_once
