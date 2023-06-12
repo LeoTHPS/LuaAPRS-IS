@@ -8,6 +8,8 @@
 APRS_IS_API_DEFINE_Extension(Script,
 {
 	APRS_IS_API_RegisterGlobal(SCRIPT_EXIT_CODE_SUCCESS);
+	APRS_IS_API_RegisterGlobal(SCRIPT_EXIT_CODE_USER_DEFINED);
+	APRS_IS_API_RegisterGlobal(SCRIPT_EXIT_CODE_APRS_IS_CONNECTION_CLOSED);
 	APRS_IS_API_RegisterGlobal(SCRIPT_EXIT_CODE_APRS_IS_CONNECTION_FAILED);
 	APRS_IS_API_RegisterGlobal(SCRIPT_EXIT_CODE_SQLITE3_OPEN_FAILED);
 
@@ -16,8 +18,6 @@ APRS_IS_API_DEFINE_Extension(Script,
 
 	APRS_IS_API_RegisterGlobalFunction(script_load_extension);
 	APRS_IS_API_RegisterGlobalFunction(script_unload_extension);
-
-	APRS_IS_API_RegisterGlobalFunction(script_enter_loop);
 })
 
 void APRS::IS::API::RegisterExtensions()

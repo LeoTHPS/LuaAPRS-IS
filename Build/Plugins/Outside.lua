@@ -2,6 +2,7 @@ require('APRS-IS');
 
 require('Extensions.Script');
 
+Script.LoadExtension('Extensions/Loop.dll',    'Extensions.Loop');
 Script.LoadExtension('Extensions/Mutex.dll',   'Extensions.Mutex');
 Script.LoadExtension('Extensions/Types.dll',   'Extensions.Types');
 Script.LoadExtension('Extensions/System.dll',  'Extensions.System');
@@ -173,20 +174,16 @@ function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 	return true;
 end
 
-function Outside.Run(tick_rate)
-	if not tick_rate then
-		tick_rate = 5;
-	end
-
-	if not Outside.Private.Database.IsOpen() then
-		Console.WriteLine('Outside.Database', 'Database not open');
-
+function Outside.Run(interval_ms)
+	if not Outside.Private.Config then
 		return false;
 	end
 
-	if not Outside.Private.APRS.IS.Connect(Outside.Private.Config.APRS.IS.Host, Outside.Private.Config.APRS.IS.Port, Outside.Private.Config.APRS.Callsign, Outside.Private.Config.APRS.IS.Passcode, Outside.Private.Config.APRS.Path, Outside.Private.Config.APRS.IS.Filter) then
-		Console.WriteLine('Outside.APRS.IS', 'Connection failed');
+	if not interval_ms then
+		interval_ms = 200;
+	end
 
+	if not Outside.Private.APRS.IS.Connect(Outside.Private.Config.APRS.IS.Host, Outside.Private.Config.APRS.IS.Port, Outside.Private.Config.APRS.Callsign, Outside.Private.Config.APRS.IS.Passcode, Outside.Private.Config.APRS.Path, Outside.Private.Config.APRS.IS.Filter) then
 		Outside.Private.Database.Close();
 
 		Script.SetExitCode(Script.ExitCodes.APRS.IS.ConnectionFailed);
@@ -194,30 +191,9 @@ function Outside.Run(tick_rate)
 		return false;
 	end
 
-	Console.WriteLine('Outside.APRS.IS', 'Connected to ' .. Outside.Private.Config.APRS.IS.Host .. ':' .. Outside.Private.Config.APRS.IS.Port .. ' as ' .. Outside.Private.Config.APRS.Callsign);
-
-	Script.Loop(tick_rate, function(delta_ms)
-		if not Outside.Private.APRS.IS.IsConnected() then
-			Console.WriteLine('Outside.APRS.IS', 'Connection closed');
-			return false;
-		end
-
-		repeat
-			local aprs_is_would_block, aprs_packet = Outside.Private.APRS.IS.ReceivePacket();
-
-			if not aprs_is_would_block and aprs_packet then
-				Outside.Events.ExecuteEvent(Outside.Events.OnReceivePacket, aprs_packet);
-			end
-		until aprs_is_would_block or not aprs_packet;
-
-		Outside.Private.UpdateIdleState();
-		Outside.Events.ExecuteScheduledEvents();
-
-		return true;
-	end);
+	Outside.Private.RunLoop(interval_ms);
 
 	Outside.Private.LeaveIdleState();
-
 	Outside.Private.APRS.IS.Disconnect();
 
 	if not Outside.Private.Storage.Save() then
@@ -445,6 +421,40 @@ function Outside.Private.IsIdle()
 	return Outside.Private.IdleTimestamp ~= nil;
 end
 
+function Outside.Private.RunLoop(interval_ms)
+	local loop = Loop.Init(interval_ms);
+
+	if loop then
+		if Outside.Private.OnUpdate(0) then
+			repeat
+				local loop_delta = Loop.Sync(loop);
+			until not Outside.Private.OnUpdate(loop_delta);
+		end
+
+		Loop.Deinit(loop);
+	end
+end
+
+function Outside.Private.OnUpdate(delta_ms)
+	if not Outside.Private.APRS.IS.IsConnected() then
+		Console.WriteLine('Outside', 'Not connected - Exiting');
+		return false;
+	end
+
+	repeat
+		local aprs_is_would_block, aprs_packet = Outside.Private.APRS.IS.ReceivePacket();
+
+		if not aprs_is_would_block and aprs_packet then
+			Outside.Events.ExecuteEvent(Outside.Events.OnReceivePacket, aprs_packet);
+		end
+	until aprs_is_would_block or not aprs_packet;
+
+	Outside.Private.UpdateIdleState();
+	Outside.Events.ExecuteScheduledEvents(delta_ms);
+
+	return true;
+end
+
 function Outside.Private.UpdateIdleState()
 	if not Outside.Private.IsIdle() then
 		if System.GetIdleTime() >= Outside.Private.Config.MinIdleTime then
@@ -471,11 +481,13 @@ function Outside.Private.EnterIdleState()
 end
 
 function Outside.Private.LeaveIdleState()
-	Outside.Events.ExecuteEvent(Outside.Events.OnLeaveIdleState);
+	if Outside.Private.IsIdle() then
+		Outside.Events.ExecuteEvent(Outside.Events.OnLeaveIdleState);
 
-	Outside.Private.Discord.RichPresence.Deinit();
+		Outside.Private.Discord.RichPresence.Deinit();
 
-	Outside.Private.IdleTimestamp = nil;
+		Outside.Private.IdleTimestamp = nil;
+	end
 end
 
 function Outside.Private.RestoreMostRecentStationLocation()
@@ -551,7 +563,11 @@ function Outside.Events.ScheduleEvent(event, delay, ...)
 		Outside.Private.ScheduledEvents = {};
 	end
 
-	local timestamp = System.GetTimestamp() + delay;
+	if Outside.Private.ScheduledEventTimer == nil then
+		Outside.Private.ScheduledEventTimer = 0;
+	end
+
+	local timestamp = Outside.Private.ScheduledEventTimer + (delay * 1000);
 
 	if not Outside.Private.ScheduledEvents[timestamp] then
 		Outside.Private.ScheduledEvents[timestamp] = {};
@@ -574,7 +590,13 @@ function Outside.Events.UnregisterEvent(event, callback)
 	end
 end
 
-function Outside.Events.ExecuteScheduledEvents()
+function Outside.Events.ExecuteScheduledEvents(delta_ms)
+	if Outside.Private.ScheduledEventTimer == nil then
+		Outside.Private.ScheduledEventTimer = 0;
+	end
+
+	Outside.Private.ScheduledEventTimer = Outside.Private.ScheduledEventTimer + delta_ms;
+
 	while Outside.Private.Events.ExecuteScheduledEvents() do
 		-- do nothing
 	end
@@ -583,7 +605,7 @@ end
 function Outside.Private.Events.ExecuteScheduledEvents()
 	if Outside.Private.ScheduledEvents then
 		for timestamp, events in pairs(Outside.Private.ScheduledEvents) do
-			if timestamp <= System.GetTimestamp() then
+			if timestamp <= Outside.Private.ScheduledEventTimer then
 				for event_index, event in ipairs(events) do
 					Outside.Events.ExecuteEvent(event[1], table.unpack(event[2]));
 				end
@@ -608,21 +630,25 @@ end
 
 function Outside.Private.APRS.IS.Connect(host, port, callsign, passcode, path, filter)
 	if Outside.Private.APRS.IS.IsConnected() then
+		Console.WriteLine('Outside.APRS.IS', 'Already connected');
 		return false;
 	end
 
 	Outside.Private.APRS.IS.Handle = APRS.IS.Init(callsign, passcode, filter, path);
 
 	if not Outside.Private.APRS.IS.Handle then
+		Console.WriteLine('Outside.APRS.IS', 'Init failed');
 		return false;
 	end
 
 	if not APRS.IS.Connect(Outside.Private.APRS.IS.Handle, host, port) then
+		Console.WriteLine('Outside.APRS.IS', 'Connection failed');
 		APRS.IS.Deinit(Outside.Private.APRS.IS.Handle);
 		Outside.Private.APRS.IS.Handle = nil;
-
 		return false;
 	end
+
+	Console.WriteLine('Outside.APRS.IS', 'Connected to ' .. host .. ':' .. port .. ' as ' .. callsign);
 
 	return true;
 end
@@ -638,12 +664,13 @@ end
 -- @return false on connection closed
 function Outside.Private.APRS.IS.SendPacket(content)
 	if not Outside.Private.APRS.IS.IsConnected() then
+		Console.WriteLine('Outside.APRS.IS', 'Not connected');
 		return false;
 	end
 
 	if not APRS.IS.SendPacket(Outside.Private.APRS.IS.Handle, Outside.Private.Config.APRS.ToCall, content) then
+		Console.WriteLine('Outside.APRS.IS', 'Connection closed');
 		Outside.Private.APRS.IS.Disconnect();
-
 		return false;
 	end
 
@@ -653,12 +680,12 @@ end
 -- @return false on connection closed
 function Outside.Private.APRS.IS.SendMessage(destination, content, ack)
 	if not Outside.Private.APRS.IS.IsConnected() then
+		Console.WriteLine('Outside.APRS.IS', 'Not connected');
 		return false;
 	end
 
 	if not APRS.IS.SendMessage(Outside.Private.APRS.IS.Handle, Outside.Private.Config.APRS.ToCall, destination, content, ack) then
 		Outside.Private.APRS.IS.Disconnect();
-
 		return false;
 	end
 
@@ -672,8 +699,8 @@ function Outside.Private.APRS.IS.SendMessageAck(destination, value)
 	end
 
 	if not APRS.IS.SendMessageAck(Outside.Private.APRS.IS.Handle, Outside.Private.Config.APRS.ToCall, destination, value) then
+		Console.WriteLine('Outside.APRS.IS', 'Connection closed');
 		Outside.Private.APRS.IS.Disconnect();
-
 		return false;
 	end
 
@@ -686,8 +713,8 @@ function Outside.Private.APRS.IS.ReceivePacket()
 	local would_block, packet = APRS.IS.ReadPacket(Outside.Private.APRS.IS.Handle);
 
 	if not would_block and not packet then
+		Console.WriteLine('Outside.APRS.IS', 'Connection closed');
 		Outside.Private.APRS.IS.Disconnect();
-
 		return false, nil;
 	end
 
@@ -745,11 +772,9 @@ function Outside.Private.Database.Open(path)
 	end
 
 	if not SQLite3.Open(Outside.Private.Database.Handle) then
+		Console.WriteLine('Outside.Database', string.format('Error opening SQLite3 database \'%s\'', path));
 		SQLite3.Deinit(Outside.Private.Database.Handle);
 		Outside.Private.Database.Handle = nil;
-
-		Console.WriteLine('Outside.Database', string.format('Error opening SQLite3 database \'%s\'', path));
-
 		return false;
 	end
 
