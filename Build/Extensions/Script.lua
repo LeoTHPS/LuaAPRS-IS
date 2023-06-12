@@ -14,10 +14,6 @@ Script =
 		script_unload_extension(extension);
 	end,
 
-	Loop = function(tick_rate, callback)
-		script_enter_loop(tonumber(tick_rate), callback);
-	end,
-
 	GetExitCode = function()
 		return script_get_exit_code();
 	end,
@@ -28,19 +24,21 @@ Script =
 
 	ExitCodes =
 	{
-		Success = SCRIPT_EXIT_CODE_SUCCESS,
+		Success     = SCRIPT_EXIT_CODE_SUCCESS,
+		UserDefined = 1000,
 
 		APRS =
 		{
 			IS =
 			{
-				ConnectionFailed = SCRIPT_EXIT_CODE_APRS_IS_CONNECTION_FAILED
+				ConnectionClosed = 1,
+				ConnectionFailed = 2
 			}
 		},
 
 		SQLite3 =
 		{
-			OpenFailed = SCRIPT_EXIT_CODE_SQLITE3_OPEN_FAILED
+			OpenFailed = 3
 		}
 	}
 };

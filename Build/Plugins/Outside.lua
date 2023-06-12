@@ -14,6 +14,9 @@ Outside          = {};
 Outside.Private  = {};
 Outside.INFINITE = 0x7FFFFFFFFFFFFFFF;
 
+Script.ExitCodes.Storage            = {};
+Script.ExitCodes.Storage.LoadFailed = Script.ExitCodes.UserDefined + 1;
+
 function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, aprs_is_port, min_idle_time, position_ttl, database_path, station_list)
 	Outside.Private.Config                       = {};
 	Outside.Private.Config.MinIdleTime           = min_idle_time;
@@ -61,9 +64,7 @@ function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 		Console.WriteLine('Outside', 'Error loading storage');
 
 		Outside.Private.Database.Close();
-
-		-- TODO: this should have its own error code
-		Script.SetExitCode(Script.ExitCodes.SQLite3.OpenFailed);
+		Script.SetExitCode(Script.ExitCodes.Storage.LoadFailed);
 
 		return false;
 	end
@@ -185,9 +186,7 @@ function Outside.Run(interval_ms)
 
 	if not Outside.Private.APRS.IS.Connect(Outside.Private.Config.APRS.IS.Host, Outside.Private.Config.APRS.IS.Port, Outside.Private.Config.APRS.Callsign, Outside.Private.Config.APRS.IS.Passcode, Outside.Private.Config.APRS.Path, Outside.Private.Config.APRS.IS.Filter) then
 		Outside.Private.Database.Close();
-
 		Script.SetExitCode(Script.ExitCodes.APRS.IS.ConnectionFailed);
-
 		return false;
 	end
 
@@ -443,6 +442,11 @@ function Outside.Private.OnUpdate(delta_ms)
 
 	repeat
 		local aprs_is_would_block, aprs_packet = Outside.Private.APRS.IS.ReceivePacket();
+
+		if not aprs_is_would_block and not aprs_packet then
+			Script.SetExitCode(Script.ExitCodes.APRS.IS.ConnectionClosed);
+			return false;
+		end
 
 		if not aprs_is_would_block and aprs_packet then
 			Outside.Events.ExecuteEvent(Outside.Events.OnReceivePacket, aprs_packet);

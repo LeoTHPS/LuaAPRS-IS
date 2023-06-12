@@ -1,11 +1,11 @@
 #include "API.hpp"
 #include "Script.hpp"
 
-AL::int16 script_exit_code = SCRIPT_EXIT_CODE_SUCCESS;
+AL::int16 script_exit_code;
 
 void                 script_init()
 {
-	script_exit_code = 0;
+	script_exit_code = SCRIPT_EXIT_CODE_SUCCESS;
 }
 void                 script_deinit()
 {
