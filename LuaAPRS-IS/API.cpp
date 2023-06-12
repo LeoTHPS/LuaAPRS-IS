@@ -13,24 +13,18 @@ typedef APRS::Position aprs_position;
 
 struct aprs_is
 {
-	AL::Collections::Array<AL::String> filter;
-	AL::String                         callsign;
-	AL::uint16                         passcode;
-	AL::String                         digipath;
-
-	APRS::IS::TcpClient                client;
-	aprs_packet                        packet;
-	AL::String                         packet_buffer;
+	APRS::IS::TcpClient client;
+	aprs_packet         packet;
+	AL::String          packet_buffer;
+	AL::String          digipath;
 };
 
 aprs_is*                                   aprs_is_init(const char* callsign, AL::uint16 passcode, const char* filter, const char* digipath)
 {
 	auto is = new aprs_is
 	{
-		.filter   = filter ? AL::Collections::Array<AL::String>({ filter }) : AL::Collections::Array<AL::String>(),
-		.callsign = callsign,
-		.passcode = passcode,
-		.digipath = digipath
+		.client   = APRS::IS::TcpClient(AL::String(callsign), passcode, (filter ? APRS::IS::Filter({ filter }) : APRS::IS::Filter())),
+		.digipath = digipath,
 	};
 
 	return is;
@@ -83,10 +77,7 @@ bool                                       aprs_is_connect(aprs_is* is, const ch
 	try
 	{
 		is->client.Connect(
-			remoteEP,
-			is->callsign,
-			is->passcode,
-			is->filter
+			remoteEP
 		);
 	}
 	catch (const AL::Exception& exception)
@@ -161,7 +152,7 @@ bool                                       aprs_is_send_packet(aprs_is* is, cons
 	aprs_packet packet =
 	{
 		.ToCall   = tocall,
-		.Sender   = is->callsign,
+		.Sender   = is->client.GetCallsign(),
 		.Content  = content,
 		.DigiPath = is->digipath
 	};
@@ -177,7 +168,7 @@ bool                                       aprs_is_send_message(aprs_is* is, con
 		.Destination = destination
 	};
 
-	auto packet = message.Encode(tocall, is->callsign, is->digipath);
+	auto packet = message.Encode(tocall, is->client.GetCallsign(), is->digipath);
 
 	return aprs_is_write_packet(is, &packet);
 }
@@ -189,7 +180,7 @@ bool                                       aprs_is_send_message_ack(aprs_is* is,
 		.Destination = destination
 	};
 
-	auto packet = message.Encode(tocall, is->callsign, is->digipath);
+	auto packet = message.Encode(tocall, is->client.GetCallsign(), is->digipath);
 
 	return aprs_is_write_packet(is, &packet);
 }
@@ -205,7 +196,7 @@ bool                                       aprs_is_send_position(aprs_is* is, co
 		.SymbolTableKey = *symbol_table_key
 	};
 
-	auto packet = position.Encode(tocall, is->callsign, is->digipath);
+	auto packet = position.Encode(tocall, is->client.GetCallsign(), is->digipath);
 
 	return aprs_is_write_packet(is, &packet);
 }
