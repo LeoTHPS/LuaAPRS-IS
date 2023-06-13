@@ -6,16 +6,6 @@ Outside          = {};
 Outside.Private  = {};
 Outside.INFINITE = Gateway.INFINITE;
 
-Outside.Events                           = {};
-Outside.Events.OnEnterIdleState          = {}; -- function()
-Outside.Events.OnLeaveIdleState          = {}; -- function()
-Outside.Events.OnDiscordError            = {}; -- function(error_code, message)
-Outside.Events.OnDiscordConnected        = {}; -- function(user_id, username, discriminator)
-Outside.Events.OnDiscordDisconnected     = {}; -- function(error_code, message)
-Outside.Events.OnPositionChanged         = {}; -- function(name, station, path, igate, latitude, longitude, altitude)
-Outside.Private.Events                   = {};
-Outside.Private.Events.OnDoUpdateDiscord = {}; -- function()
-
 function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, aprs_is_port, min_idle_time, position_ttl, database_path, station_list)
 	Outside.Private.Config                       = {};
 	Outside.Private.Config.MinIdleTime           = min_idle_time;
@@ -47,7 +37,7 @@ function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 	end
 
 	if Outside.Private.RestoreMostRecentStationLocation() then
-		local timestamp, name, callsign, latitude, longitude, altitude, comment, path, igate = Outside.GetMostRecentStationPosition();
+		local timestamp, name, callsign, path, igate, latitude, longitude, altitude, comment = Outside.GetMostRecentStationPosition();
 		local timestamp_delta                                                                = System.GetTimestamp() - timestamp;
 
 		Console.WriteLine('Outside', string.format('Restored position of %s from %s ago', callsign, Outside.Private.FormatTimestampDeltaAsString(timestamp_delta)));
@@ -60,7 +50,7 @@ function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 	Outside.Events.RegisterEvent(Gateway.Events.OnReceivePosition, function(station, path, igate, latitude, longitude, altitude, comment)
 		local function update_station_position(name)
 			Gateway.Storage.SetLastPosition(name, station, path, igate, latitude, longitude, altitude, comment);
-			Outside.Private.SetStationPosition(System.GetTimestamp(), name, station, latitude, longitude, altitude, comment, path, igate);
+			Outside.Private.SetStationPosition(System.GetTimestamp(), name, station, path, igate, latitude, longitude, altitude, comment);
 		end
 
 		if not Outside.Private.Config.StationList then
@@ -75,7 +65,7 @@ function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 		end
 	end);
 
-	Outside.Events.RegisterEvent(Outside.Private.Events.OnDoUpdateDiscord, function()
+	Outside.Events.RegisterEvent(Outside.Private.Events.UpdateDiscord, function()
 		if Outside.Private.IsIdle() then
 			local discord_header                  = nil;
 			local discord_message                 = nil;
@@ -87,8 +77,8 @@ function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 			local discord_party_size_max          = 0;
 	
 			local latitude, longitude, altitude                                                                                                                          = Outside.GetPosition();
-			local station_timestamp, station_name, station_callsign, station_latitude, station_longitude, station_altitude, station_comment, station_path, station_igate = Outside.GetMostRecentStationPosition();
-	
+			local station_timestamp, station_name, station_callsign, station_path, station_igate, station_latitude, station_longitude, station_altitude, station_comment = Outside.GetMostRecentStationPosition();
+
 			if station_timestamp == 0 then
 				discord_header, discord_message = Outside.GetDefaultIdleMessage();
 			else
@@ -102,7 +92,7 @@ function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 				if not idle_message_header or not idle_message then
 					idle_message_header, idle_message, distance_divider = Outside.GetDefaultIdleMessage();
 				end
-	
+
 				local path_icon_station, path_icon, path_icon_comment = Outside.Private.GetStationPathIcon(station_path);
 
 				discord_header          = idle_message_header;
@@ -111,11 +101,13 @@ function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 				discord_icon_small      = path_icon or 'aprs_icon';
 				discord_icon_small_text = path_icon_comment and string.format(path_icon_comment, station_igate) or string.format('%s via %s', station_path, station_igate);
 			end
-	
+
 			Outside.Private.Discord.RichPresence.Update(discord_header, discord_message, Outside.Private.IdleTimestamp, 0, discord_icon_big, discord_icon_big_text, discord_icon_small, discord_icon_small_text, discord_party_size, discord_party_size_max);
 			Outside.Private.Discord.RichPresence.Poll();
 
-			Outside.Events.ScheduleEvent(Outside.Private.Events.OnDoUpdateDiscord, 1);
+			if Outside.Private.DiscordAutoUpdate then
+				Outside.Events.ScheduleEvent(Outside.Private.Events.UpdateDiscord, 5);
+			end
 		end
 	end);
 
@@ -150,10 +142,10 @@ function Outside.SetPosition(latitude, longitude, altitude)
 	};
 end
 
--- @return timestamp, name, callsign, latitude, longitude, altitude, comment, path, igate
+-- @return timestamp, name, callsign, path, igate, latitude, longitude, altitude, comment
 function Outside.GetMostRecentStationPosition()
 	if not Outside.Private.StationPositions then
-		return 0, nil, nil, 0, 0, 0, nil, nil, nil;
+		return 0, nil, nil, nil, nil, 0, 0, 0, nil;
 	end
 
 	local most_recent_station_callsign  = nil;
@@ -171,13 +163,13 @@ function Outside.GetMostRecentStationPosition()
 	local station = Outside.Private.StationPositions[most_recent_station_callsign];
 
 	if not station then
-		return 0, nil, nil, 0, 0, 0, nil, nil, nil;
+		return 0, nil, nil, nil, nil, 0, 0, 0, nil;
 	end
 
-	return station.Timestamp, tostring(station.Name), tostring(most_recent_station_callsign), tonumber(station.Latitude), tonumber(station.Longitude), tonumber(station.Altitude), tostring(station.Comment), tostring(station.Path), tostring(station.IGate);
+	return station.Timestamp, tostring(station.Name), tostring(most_recent_station_callsign), tostring(station.Path), tostring(station.IGate), tonumber(station.Latitude), tonumber(station.Longitude), tonumber(station.Altitude), tostring(station.Comment or '');
 end
 
-function Outside.Private.SetStationPosition(timestamp, name, callsign, latitude, longitude, altitude, comment, path, igate)
+function Outside.Private.SetStationPosition(timestamp, name, callsign, path, igate, latitude, longitude, altitude, comment)
 	if not Outside.Private.StationPositions then
 		Outside.Private.StationPositions = {};
 	end
@@ -194,7 +186,7 @@ function Outside.Private.SetStationPosition(timestamp, name, callsign, latitude,
 		Longitude = longitude
 	};
 
-	Outside.Events.ExecuteEvent(Outside.Events.OnPositionChanged, name, callsign, path, igate, latitude, longitude, altitude);
+	Outside.Events.ExecuteEvent(Outside.Events.OnPositionChanged, name, callsign, path, igate, latitude, longitude, altitude, comment);
 end
 
 -- @return header, message, distance_divider
@@ -364,22 +356,24 @@ function Outside.Private.EnterIdleState()
 
 	if not Outside.Private.Discord.RichPresence.Init(Outside.Private.Config.Discord.ApplicationID) then
 		Outside.Private.IdleTimestamp = nil;
-
 		return false;
 	end
 
+	Outside.Private.DiscordAutoUpdate = true;
+
 	Outside.Events.ExecuteEvent(Outside.Events.OnEnterIdleState);
-	Outside.Events.ExecuteEvent(Outside.Private.Events.OnDoUpdateDiscord);
+	Outside.Events.ExecuteEvent(Outside.Private.Events.UpdateDiscord);
 
 	return true;
 end
 
 function Outside.Private.LeaveIdleState()
 	if Outside.Private.IsIdle() then
+		Outside.Private.DiscordAutoUpdate = nil;
+
 		Outside.Events.ExecuteEvent(Outside.Events.OnLeaveIdleState);
 
 		Outside.Private.Discord.RichPresence.Deinit();
-
 		Outside.Private.IdleTimestamp = nil;
 	end
 end
@@ -391,7 +385,7 @@ function Outside.Private.RestoreMostRecentStationLocation()
 		return false;
 	end
 
-	Outside.Private.SetStationPosition(timestamp, name, station, latitude, longitude, altitude, comment, path, igate);
+	Outside.Private.SetStationPosition(timestamp, name, station, path, igate, latitude, longitude, altitude, comment);
 
 	return true;
 end
@@ -481,6 +475,16 @@ end
 function Outside.Private.Discord.RichPresence.Callbacks.SpectateGame(spectate_secret)
 end
 
+Outside.Events                       = {};
+Outside.Events.OnEnterIdleState      = {}; -- function()
+Outside.Events.OnLeaveIdleState      = {}; -- function()
+Outside.Events.OnDiscordError        = {}; -- function(error_code, message)
+Outside.Events.OnDiscordConnected    = {}; -- function(user_id, username, discriminator)
+Outside.Events.OnDiscordDisconnected = {}; -- function(error_code, message)
+Outside.Events.OnPositionChanged     = {}; -- function(name, station, path, igate, latitude, longitude, altitude, comment)
+Outside.Private.Events               = {};
+Outside.Private.Events.UpdateDiscord = {}; -- function()
+
 function Outside.Events.ExecuteEvent(event, ...)
 	Gateway.Events.ExecuteEvent(event, ...);
 end
@@ -515,7 +519,7 @@ function Gateway.Storage.GetLastPosition()
 	local last_position_longitude = Gateway.Storage.Get('last_position_longitude');
 	local last_position_timestamp = Gateway.Storage.Get('last_position_timestamp');
 
-	return tonumber(last_position_timestamp), tostring(last_position_name), tostring(last_position_station), tostring(last_position_path), tostring(last_position_igate), tonumber(last_position_latitude), tonumber(last_position_longitude), tonumber(last_position_altitude), tostring(last_position_comment);
+	return tonumber(last_position_timestamp), tostring(last_position_name), tostring(last_position_station), tostring(last_position_path), tostring(last_position_igate), tonumber(last_position_latitude), tonumber(last_position_longitude), tonumber(last_position_altitude), last_position_comment and tostring(last_position_comment) or nil;
 end
 
 function Gateway.Storage.SetLastPosition(name, station, path, igate, latitude, longitude, altitude, comment)
@@ -524,7 +528,7 @@ function Gateway.Storage.SetLastPosition(name, station, path, igate, latitude, l
 	Gateway.Storage.Set('last_position_path',      tostring(path));
 	Gateway.Storage.Set('last_position_igate',     tostring(igate));
 	Gateway.Storage.Set('last_position_station',   tostring(station));
-	Gateway.Storage.Set('last_position_comment',   tonumber(comment));
+	Gateway.Storage.Set('last_position_comment',   comment and tostring(comment) or nil);
 	Gateway.Storage.Set('last_position_altitude',  tonumber(altitude));
 	Gateway.Storage.Set('last_position_latitude',  tonumber(latitude));
 	Gateway.Storage.Set('last_position_longitude', tonumber(longitude));
