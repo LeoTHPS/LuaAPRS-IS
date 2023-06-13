@@ -58,8 +58,9 @@ function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 	end);
 
 	Outside.Events.RegisterEvent(Gateway.Events.OnReceivePosition, function(station, path, igate, latitude, longitude, altitude, comment)
-		local function update_station_position(packet_sender_name)
-			Outside.Private.SetStationPosition(System.GetTimestamp(), packet_sender_name, station, latitude, longitude, altitude, path, igate);
+		local function update_station_position(name)
+			Gateway.Storage.SetLastPosition(name, station, path, igate, latitude, longitude, altitude);
+			Outside.Private.SetStationPosition(System.GetTimestamp(), name, station, latitude, longitude, altitude, path, igate);
 		end
 
 		if not Outside.Private.Config.StationList then
@@ -497,7 +498,7 @@ end
 
 -- @return timestamp, name, station, path, igate, latitude, longitude, altitude
 function Gateway.Storage.GetLastPosition()
-	local last_position = Gateway.Private.Storage.Get('last_position');
+	local last_position = Gateway.Storage.Get('last_position');
 
 	if not last_position then
 		return 0, nil, nil, nil, nil, 0, 0, 0;
