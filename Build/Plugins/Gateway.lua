@@ -166,7 +166,7 @@ function Gateway.Private.OnUpdate(delta_ms)
 end
 
 Gateway.Events                     = {};
-Gateway.Events.OnEvent             = {}; -- function(prefix, params)
+Gateway.Events.OnEvent             = {}; -- function(sender, prefix, params)
 Gateway.Events.OnUpdate            = {}; -- function(delta_ms)
 Gateway.Events.OnConnected         = {}; -- function(host, port, callsign)
 Gateway.Events.OnDisconnected      = {}; -- function()
@@ -243,6 +243,8 @@ function Gateway.Private.Events.ExecuteScheduledEvents()
 	return false
 end
 
+Gateway.APRS                        = {};
+Gateway.APRS.IS                     = {};
 Gateway.Private.APRS                = {};
 Gateway.Private.APRS.IS             = {};
 Gateway.Private.APRS.IS.Handle      = nil;
@@ -289,7 +291,7 @@ function Gateway.Private.APRS.IS.Disconnect()
 end
 
 -- @return false on connection closed
-function Gateway.Private.APRS.IS.SendPacket(content)
+function Gateway.APRS.IS.SendPacket(content)
 	if not Gateway.Private.APRS.IS.IsConnected() then
 		Console.WriteLine('Gateway.APRS.IS', 'Not connected');
 		return false;
@@ -305,7 +307,7 @@ function Gateway.Private.APRS.IS.SendPacket(content)
 end
 
 -- @return false on connection closed
-function Gateway.Private.APRS.IS.SendMessage(destination, content, ack)
+function Gateway.APRS.IS.SendMessage(destination, content, ack)
 	if not Gateway.Private.APRS.IS.IsConnected() then
 		Console.WriteLine('Gateway.APRS.IS', 'Not connected');
 		return false;
@@ -351,6 +353,7 @@ end
 Gateway.Commands         = {};
 Gateway.Private.Commands = {};
 
+-- @param handler function(sender, prefix, params)
 function Gateway.Commands.SetHandler(prefix, handler)
 	if not Gateway.Private.Commands.Handlers then
 		Gateway.Private.Commands.Handlers = {};
@@ -365,7 +368,7 @@ function Gateway.Commands.RemoveHandler(prefix)
 	end
 end
 
-function Gateway.Private.Commands.Execute(prefix, params)
+function Gateway.Private.Commands.Execute(sender, prefix, params)
 	if Gateway.Private.Commands.Handlers then
 		local command_handler = Gateway.Private.Commands.Handlers[string.lower(prefix)];
 
@@ -376,10 +379,16 @@ function Gateway.Private.Commands.Execute(prefix, params)
 				table.insert(command_params, param);
 			end
 
-			Gateway.Events.ExecuteEvent(Gateway.Events.OnEvent, prefix, command_params);
+			Gateway.Events.ExecuteEvent(Gateway.Events.OnEvent, sender, prefix, command_params);
 
-			command_handler(prefix, command_params);
+			command_handler(sender, prefix, command_params);
 		end
+	end
+end
+
+function Gateway.Private.Commands.Enumerate(callback)
+	for command_prefix, command_handler in pairs(Gateway.Private.Commands.Handlers) do
+		callback(command_prefix, command_handler);
 	end
 end
 
