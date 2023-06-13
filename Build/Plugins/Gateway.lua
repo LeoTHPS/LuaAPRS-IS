@@ -1,3 +1,5 @@
+-- TODO: add command handler logic with function(prefix, params) callback
+
 require('APRS-IS');
 
 require('Extensions.Script');
@@ -156,13 +158,15 @@ function Gateway.Private.OnUpdate(delta_ms)
 		end
 	until aprs_is_would_block or not aprs_packet;
 
-	Gateway.Events.ExecuteScheduledEvents(delta_ms);
+	Gateway.Private.Events.UpdateScheduledEvents(delta_ms);
+
 	Gateway.Events.ExecuteEvent(Gateway.Events.OnUpdate, delta_ms);
 
 	return true;
 end
 
 Gateway.Events                     = {};
+Gateway.Events.OnEvent             = {}; -- function(prefix, params)
 Gateway.Events.OnUpdate            = {}; -- function(delta_ms)
 Gateway.Events.OnConnected         = {}; -- function(host, port, callsign)
 Gateway.Events.OnDisconnected      = {}; -- function()
@@ -210,7 +214,7 @@ function Gateway.Events.UnregisterEvent(event, callback)
 	end
 end
 
-function Gateway.Events.ExecuteScheduledEvents(delta_ms)
+function Gateway.Private.Events.UpdateScheduledEvents(delta_ms)
 	if Gateway.Private.ScheduledEventTimer == nil then
 		Gateway.Private.ScheduledEventTimer = 0;
 	end
@@ -342,6 +346,41 @@ function Gateway.Private.APRS.IS.ReceivePacket()
 	end
 
 	return would_block, packet;
+end
+
+Gateway.Commands         = {};
+Gateway.Private.Commands = {};
+
+function Gateway.Commands.SetHandler(prefix, handler)
+	if not Gateway.Private.Commands.Handlers then
+		Gateway.Private.Commands.Handlers = {};
+	end
+
+	Gateway.Private.Commands.Handlers[string.lower(prefix)] = handler;
+end
+
+function Gateway.Commands.RemoveHandler(prefix)
+	if Gateway.Private.Commands.Handlers then
+		Gateway.Private.Commands.Handlers[string.lower(prefix)] = nil;
+	end
+end
+
+function Gateway.Private.Commands.Execute(prefix, params)
+	if Gateway.Private.Commands.Handlers then
+		local command_handler = Gateway.Private.Commands.Handlers[string.lower(prefix)];
+
+		if command_handler then
+			local command_params = {};
+
+			for param in string.gmatch(params, '[^ ]+') do
+				table.insert(command_params, param);
+			end
+
+			Gateway.Events.ExecuteEvent(Gateway.Events.OnEvent, prefix, command_params);
+
+			command_handler(prefix, command_params);
+		end
+	end
 end
 
 Gateway.Private.Database        = {};
