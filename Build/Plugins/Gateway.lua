@@ -241,12 +241,11 @@ function Gateway.Private.Events.ExecuteScheduledEvents()
 	return false
 end
 
-Gateway.APRS                        = {};
-Gateway.APRS.IS                     = {};
-Gateway.Private.APRS                = {};
-Gateway.Private.APRS.IS             = {};
-Gateway.Private.APRS.IS.Handle      = nil;
-Gateway.Private.APRS.IS.PacketCount = 0;
+Gateway.APRS                   = {};
+Gateway.APRS.IS                = {};
+Gateway.Private.APRS           = {};
+Gateway.Private.APRS.IS        = {};
+Gateway.Private.APRS.IS.Handle = nil;
 
 function Gateway.Private.APRS.IS.IsConnected()
 	return Gateway.Private.APRS.IS.Handle ~= nil;
