@@ -43,7 +43,7 @@ ifdef PLATFORM
 	endif
 
 	ifeq ($(PLATFORM), WINDOWS)
-		LDLIBS += -luser32 -lntdll -lkernel32 -lAdvapi32 -lshlwapi
+		LDLIBS += -luser32 -lkernel32 -lshlwapi
 		LDLIBS += -lwsock32 -lws2_32 -lIphlpapi
 		LDLIBS += -llua
 
