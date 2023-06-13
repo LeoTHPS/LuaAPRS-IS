@@ -410,7 +410,7 @@ void                                       aprs_position_set_longitude(aprs_posi
 }
 const char*                                aprs_position_get_comment(aprs_position* position)
 {
-	return position->Comment.GetCString();
+	return (position->Comment.GetLength() != 0) ? position->Comment.GetCString() : nullptr;
 }
 void                                       aprs_position_set_comment(aprs_position* position, const char* value)
 {
