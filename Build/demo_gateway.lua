@@ -1,6 +1,6 @@
 require('Plugins.Gateway');
 
-if Gateway.Init('N0CALL', 0, 'WIDE1-1', 'noam.aprs2.net', 14580, '', 'Gateway.db') then
+if Gateway.Init('N0CALL', 0, 'WIDE1-1', 'noam.aprs2.net', 14580, 't/mp', 'Gateway.db') then
 	Gateway.Commands.SetHandler('test', function(sender, prefix, params)
 		local params_as_string = '';
 
