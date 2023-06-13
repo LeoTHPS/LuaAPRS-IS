@@ -1,5 +1,3 @@
--- TODO: add command handler logic with function(prefix, params) callback
-
 require('APRS-IS');
 
 require('Extensions.Script');
