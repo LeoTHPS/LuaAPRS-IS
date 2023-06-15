@@ -22,7 +22,7 @@ const char* process_get_root_directory()
 
 		if ((path_length = ::readlink("/proc/self/exe", path, PATH_MAX)) > 0)
 		{
-			root_directory = AL::FileSystem::Path(path).GetRootPath();
+			root_directory = AL::FileSystem::Path(AL::String(path, static_cast<AL::size_t>(path_length))).GetRootPath();
 
 			return root_directory.GetString().GetCString();
 		}
