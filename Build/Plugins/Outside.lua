@@ -117,6 +117,7 @@ end
 
 function Outside.Run(interval_ms)
 	if not Gateway.Run(interval_ms) then
+		Console.WriteLine('Outside', 'Error running Gateway');
 		return false;
 	end
 
