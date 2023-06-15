@@ -6,7 +6,7 @@
 *.so
 *.dll
 *.exe
-LuaAPRS-IS
+*/LuaAPRS-IS
 
 # misc
 *.db
