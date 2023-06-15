@@ -33,6 +33,7 @@ function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 	end
 
 	if not Gateway.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, aprs_is_port, aprs_is_filter, database_path) then
+		Console.WriteLine('Outside', 'Error initializing Gateway');
 		return false;
 	end
 
