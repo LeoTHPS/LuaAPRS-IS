@@ -21,7 +21,7 @@ endif
 
 ifdef PLATFORM
 	ifeq ($(PLATFORM), LINUX)
-#		liblua5.4-dev
+#		liblua5.4-dev libssl-dev
 
 		LDLIBS += -llua5.4
 		LDLIBS += -lssl -lcrypto
