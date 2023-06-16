@@ -37,6 +37,7 @@ ifdef PLATFORM
 	ifeq ($(PLATFORM), LINUX)
 #		liblua5.4-dev
 
+		LDLIBS += -ldl
 		LDLIBS += -lpthread -llua5.4
 
 		FILE_EXTENSION         =
