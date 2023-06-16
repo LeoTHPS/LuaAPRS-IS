@@ -9,6 +9,7 @@ OBJECT_FILES            = $(SOURCE_FILES:.cpp=.o)
 
 OPTIMIZATION_FLAGS     ?= -Os
 
+LDFLAGS                += -static
 CPPFLAGS               += 
 CXXFLAGS               += -Wall -Wfatal-errors $(OPTIMIZATION_FLAGS) -std=c++20 -I. -I"$(AL_INCLUDE)" -I"$(LIB_APRS_IS_INCLUDE)"
 
@@ -43,9 +44,9 @@ ifdef PLATFORM
 	endif
 
 	ifeq ($(PLATFORM), WINDOWS)
-		LDLIBS += -luser32 -lkernel32 -lshlwapi
-		LDLIBS += -lwsock32 -lws2_32 -lIphlpapi
-		LDLIBS += -llua
+		LDLIBS += -dynamic -luser32 -lkernel32 -lshlwapi
+		LDLIBS += -dynamic -lwsock32 -lws2_32 -lIphlpapi
+		LDLIBS += -static -llua
 
 		FILE_EXTENSION         = .exe
 		ENVIRONMENT_VARIABLES += FILE_EXTENSION=.dll
@@ -82,4 +83,4 @@ clean_extensions:
 
 publish: build install
 	$(RM) $(PUBLISH_PATH)
-	$(ZIP) $(PUBLISH_PATH) $(RELEASE_PATH)
+	$(ZIP) $(PUBLISH_PATH) $(RELEASE_PATH) ../LICENSE

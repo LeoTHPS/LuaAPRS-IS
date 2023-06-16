@@ -5,7 +5,7 @@ CXX          ?= g++
 SOURCE_FILES  = main.cpp
 OBJECT_FILES  = $(SOURCE_FILES:.cpp=.o)
 
-LDFLAGS      += -shared
+LDFLAGS      += -static -shared
 CPPFLAGS     += 
 CXXFLAGS     += -Wall -Wfatal-errors $(OPTIMIZATION_FLAGS) -std=c++20 -fPIC -I. -I"$(AL_INCLUDE)" -I"$(LIB_APRS_IS_INCLUDE)" -I"../../"
 
@@ -28,10 +28,10 @@ ifdef PLATFORM
 	endif
 
 	ifeq ($(PLATFORM), WINDOWS)
-		LDLIBS += -luser32 -lkernel32
-		LDLIBS += -lwsock32 -lws2_32 -lIphlpapi
-		LDLIBS += -llua
-		LDLIBS += -lssl -lcrypto
+		LDLIBS += -dynamic -luser32 -lkernel32
+		LDLIBS += -static -llua
+		LDLIBS += -static -lssl -lcrypto
+		LDLIBS += -dynamic -lwsock32 -lws2_32 -lIphlpapi
 	endif
 endif
 
