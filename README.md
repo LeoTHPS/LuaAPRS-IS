@@ -5,11 +5,13 @@
 
 ### Dependencies
 
+#### Core
+
 - [Lua 5.4](https://github.com/lua/lua)
 - [libAPRS-IS](https://github.com/LeoTHPS/libAPRS-IS)
 - [AbstractionLayer](https://github.com/LeoTHPS/AbstractionLayer)
 
-### Extensions + Dependencies (Third Party)
+#### Extensions
 
 |                                                 | [json](//github.com/nlohmann/json) | [SQLite3](//github.com/sqlite/sqlite) | [OpenSSL](//github.com/openssl/openssl) | [Discord RPC](//github.com/discord/discord-rpc) |
 | ----------------------------------------------- | :--------------------------------: | :-----------------------------------: | :-------------------------------------: | :---------------------------------------------: |
@@ -26,9 +28,7 @@
 | [Types](LuaAPRS-IS/Extensions/Types/)           |                                    |                                       |                                         |                                                 |
 | [WebRequest](LuaAPRS-IS/Extensions/WebRequest/) |                                    |                                       | *                                       |                                                 |
 
-<hr />
-
-### Plugins + Dependencies (Extensions)
+#### Plugins
 
 |                                              | Console | Discord | Loop | Mutex | N2YO | Process | Script | SQLite3 | System | Thread | Types | WebRequest |
 | -------------------------------------------- | :-----: | :-----: | :--: | :---: | :--: | :-----: | :----: | :-----: | :----: | :----: | :---: | :--------: |
