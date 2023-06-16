@@ -79,3 +79,11 @@ git clone https://github.com/LeoTHPS/LuaAPRS-IS LuaAPRS-IS
 make -C LuaAPRS-IS/LuaAPRS-IS -e COMPILER=GNU PLATFORM=LINUX
 make -C LuaAPRS-IS/LuaAPRS-IS -e COMPILER=GNU PLATFORM=LINUX install
 ```
+
+<hr />
+
+### Notes about other platforms
+
+The software was developed on Windows 10 with MSYS2. A guide for setting up an MSYS2 environment will be added in the future but anyone wanting to try before then can simply change `PLATFORM` from `LINUX` to `WINDOWS` when building and installing.
+
+It's currently not possible to build on OSX.
