@@ -58,4 +58,4 @@ make -C LuaAPRS-IS/LuaAPRS-IS -e COMPILER=GNU PLATFORM=LINUX install
 
 ### Notes about the Discord extension
 
-It depends on [Discord RPC](https://github.com/discord/discord-rpc) and requires discord-rpc.dll to be in the [/LuaAPRS-IS/Extensions/Discord/](tree/master/LuaAPRS-IS/Extensions/Discord/) directory before installing LuaAPRS-IS. Since this extension will have no use to most people and currently only works on Windows I recommend simply deleting it after cloning and before building (``rm -r LuaAPRS-IS/LuaAPRS-IS/Extensions/Discord``).
+It depends on [Discord RPC](https://github.com/discord/discord-rpc) and requires discord-rpc.dll to be in the [/LuaAPRS-IS/Extensions/Discord/](LuaAPRS-IS/Extensions/Discord/) directory before installing LuaAPRS-IS. Since this extension will have no use to most people and currently only works on Windows I recommend simply deleting it after cloning and before building (``rm -r LuaAPRS-IS/LuaAPRS-IS/Extensions/Discord``).
