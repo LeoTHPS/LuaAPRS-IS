@@ -2,11 +2,11 @@ require('APRS-IS');
 
 require('Extensions.Script');
 
-Script.LoadExtension('Extensions/Loop.dll',    'Extensions.Loop');
-Script.LoadExtension('Extensions/Mutex.dll',   'Extensions.Mutex');
-Script.LoadExtension('Extensions/System.dll',  'Extensions.System');
-Script.LoadExtension('Extensions/Console.dll', 'Extensions.Console');
-Script.LoadExtension('Extensions/SQLite3.dll', 'Extensions.SQLite3');
+Script.LoadExtension('Extensions.Loop');
+Script.LoadExtension('Extensions.Mutex');
+Script.LoadExtension('Extensions.System');
+Script.LoadExtension('Extensions.Console');
+Script.LoadExtension('Extensions.SQLite3');
 
 Gateway          = {};
 Gateway.Private  = {};

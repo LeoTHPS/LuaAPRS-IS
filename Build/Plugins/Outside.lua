@@ -1,6 +1,6 @@
 require('Plugins.Gateway');
 
-Script.LoadExtension('Extensions/Discord.dll', 'Extensions.Discord');
+Script.LoadExtension('Extensions.Discord');
 
 Outside          = {};
 Outside.Private  = {};

@@ -5,9 +5,9 @@ CXX          ?= g++
 SOURCE_FILES  = main.cpp
 OBJECT_FILES  = $(SOURCE_FILES:.cpp=.o)
 
-LDFLAGS      += -static -shared
+LDFLAGS      += -static-libgcc -static-libstdc++ -shared
 CPPFLAGS     += 
-CXXFLAGS     += -Wall -Wfatal-errors $(OPTIMIZATION_FLAGS) -std=c++20 -fPIC -I. -I"$(AL_INCLUDE)" -I"$(LIB_APRS_IS_INCLUDE)" -I"../../"
+CXXFLAGS     += -Wall -Wfatal-errors $(BUILD_FLAGS) -std=c++20 -fPIC -I. -I"$(AL_INCLUDE)" -I"$(LIB_APRS_IS_INCLUDE)" -I"../../"
 
 ifdef COMPILER
 	ifeq ($(COMPILER), GNU)
@@ -28,10 +28,10 @@ ifdef PLATFORM
 	endif
 
 	ifeq ($(PLATFORM), WINDOWS)
-		LDLIBS += -dynamic -luser32 -lkernel32
-		LDLIBS += -static -llua
-		LDLIBS += -static -lssl -lcrypto
-		LDLIBS += -dynamic -lwsock32 -lws2_32 -lIphlpapi
+		LDLIBS += -luser32 -lkernel32
+		LDLIBS += -lwsock32 -lws2_32 -lIphlpapi
+		LDLIBS += -llua
+		LDLIBS += -lssl -lcrypto
 	endif
 endif
 

@@ -20,6 +20,15 @@ void                 script_set_exit_code(AL::int16 value)
 	script_exit_code = value;
 }
 
+SCRIPT_PLATFORMS     script_get_platform()
+{
+#if defined(AL_PLATFORM_LINUX)
+	return SCRIPT_PLATFORM_LINUX;
+#elif defined(AL_PLATFORM_WINDOWS)
+	return SCRIPT_PLATFORM_WINDOWS;
+#endif
+}
+
 APRS::IS::Extension* script_load_extension(const char* path)
 {
 	if (auto extension = APRS::IS::API::LoadExtension(path))

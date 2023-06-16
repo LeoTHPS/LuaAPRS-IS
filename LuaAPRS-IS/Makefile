@@ -7,11 +7,11 @@ SOURCE_FILES            = main.cpp API.cpp API_Extensions.cpp
 SOURCE_FILES           += Extensions/Script.cpp
 OBJECT_FILES            = $(SOURCE_FILES:.cpp=.o)
 
-OPTIMIZATION_FLAGS     ?= -Os
+BUILD_FLAGS            ?= -O2
 
-LDFLAGS                += -static
+LDFLAGS                += -static-libgcc -static-libstdc++
 CPPFLAGS               += 
-CXXFLAGS               += -Wall -Wfatal-errors $(OPTIMIZATION_FLAGS) -std=c++20 -I. -I"$(AL_INCLUDE)" -I"$(LIB_APRS_IS_INCLUDE)"
+CXXFLAGS               += -Wall -Wfatal-errors $(BUILD_FLAGS) -std=c++20 -I. -I"$(AL_INCLUDE)" -I"$(LIB_APRS_IS_INCLUDE)"
 
 EXTENSIONS              = $(wildcard Extensions/*)
 EXTENSIONS             := $(filter-out Extensions/Script.%, $(EXTENSIONS))
@@ -21,7 +21,7 @@ RELEASE_EXTENSION_PATH ?= $(RELEASE_PATH)/Extensions
 
 PUBLISH_PATH           ?= ../LuaAPRS-IS.zip
 
-ENVIRONMENT_VARIABLES   = COMPILER=$(COMPILER) PLATFORM=$(PLATFORM) OPTIMIZATION_FLAGS=$(OPTIMIZATION_FLAGS) RELEASE_PATH=../../$(RELEASE_PATH) RELEASE_EXTENSION_PATH=../../$(RELEASE_EXTENSION_PATH)
+ENVIRONMENT_VARIABLES   = COMPILER=$(COMPILER) PLATFORM=$(PLATFORM) BUILD_FLAGS="$(BUILD_FLAGS)" RELEASE_PATH=../../$(RELEASE_PATH) RELEASE_EXTENSION_PATH=../../$(RELEASE_EXTENSION_PATH)
 
 ifdef COMPILER
 	ifeq ($(COMPILER), GNU)
@@ -44,9 +44,9 @@ ifdef PLATFORM
 	endif
 
 	ifeq ($(PLATFORM), WINDOWS)
-		LDLIBS += -dynamic -luser32 -lkernel32 -lshlwapi
-		LDLIBS += -dynamic -lwsock32 -lws2_32 -lIphlpapi
-		LDLIBS += -static -llua
+		LDLIBS += -luser32 -lkernel32 -lshlwapi
+		LDLIBS += -lwsock32 -lws2_32 -lIphlpapi
+		LDLIBS += -llua
 
 		FILE_EXTENSION         = .exe
 		ENVIRONMENT_VARIABLES += FILE_EXTENSION=.dll
@@ -83,4 +83,6 @@ clean_extensions:
 
 publish: build install
 	$(RM) $(PUBLISH_PATH)
-	$(ZIP) $(PUBLISH_PATH) $(RELEASE_PATH) ../LICENSE
+	$(CP) ../LICENSE ./LICENSE
+	$(ZIP) $(PUBLISH_PATH) $(RELEASE_PATH) LICENSE
+	$(RM) ./LICENSE

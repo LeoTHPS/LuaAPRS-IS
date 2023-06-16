@@ -1,7 +1,16 @@
 Script =
 {
-	LoadExtension = function(path, api)
-		local extension = script_load_extension(tostring(path));
+	LoadExtension = function(api)
+		local platform       = Script.GetPlatform();
+		local extension_path = string.gsub(api, '%.', '/');
+
+		if platform == Script.Platforms.Linux then
+			extension_path = extension_path .. '.so';
+		elseif platform == Script.Platforms.Windows then
+			extension_path = extension_path .. '.dll';
+		end
+
+		local extension = script_load_extension(extension_path);
 
 		if extension ~= nil then
 			require(api);
@@ -22,6 +31,10 @@ Script =
 		script_set_exit_code(tonumber(value));
 	end,
 
+	GetPlatform = function()
+		return script_get_platform();
+	end,
+
 	ExitCodes =
 	{
 		Success     = SCRIPT_EXIT_CODE_SUCCESS,
@@ -40,5 +53,11 @@ Script =
 		{
 			OpenFailed = 3
 		}
+	},
+
+	Platforms =
+	{
+		Linux   = SCRIPT_PLATFORM_LINUX,
+		Windows = SCRIPT_PLATFORM_WINDOWS,
 	}
 };

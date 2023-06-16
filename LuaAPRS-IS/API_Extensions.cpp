@@ -9,8 +9,13 @@ APRS_IS_API_DEFINE_Extension(Script,
 {
 	APRS_IS_API_RegisterGlobal(SCRIPT_EXIT_CODE_SUCCESS);
 
+	APRS_IS_API_RegisterGlobal(SCRIPT_PLATFORM_LINUX);
+	APRS_IS_API_RegisterGlobal(SCRIPT_PLATFORM_WINDOWS);
+
 	APRS_IS_API_RegisterGlobalFunction(script_get_exit_code);
 	APRS_IS_API_RegisterGlobalFunction(script_set_exit_code);
+
+	APRS_IS_API_RegisterGlobalFunction(script_get_platform);
 
 	APRS_IS_API_RegisterGlobalFunction(script_load_extension);
 	APRS_IS_API_RegisterGlobalFunction(script_unload_extension);
