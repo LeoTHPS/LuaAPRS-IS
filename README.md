@@ -64,6 +64,8 @@ make -C LuaAPRS-IS -e COMPILER=GNU PLATFORM=LINUX install
 
 ### Quick Start Script (Debian)
 
+Use this if you want to build once and use the software in production.
+
 ```
 #!/bin/bash
 
