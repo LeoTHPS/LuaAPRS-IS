@@ -7,9 +7,9 @@
 
 #### Core
 
-- [Lua 5.4](https://github.com/lua/lua)
-- [libAPRS-IS](https://github.com/LeoTHPS/libAPRS-IS)
-- [AbstractionLayer](https://github.com/LeoTHPS/AbstractionLayer)
+- [Lua 5.4](//github.com/lua/lua)
+- [libAPRS-IS](//github.com/LeoTHPS/libAPRS-IS)
+- [AbstractionLayer](//github.com/LeoTHPS/AbstractionLayer)
 
 #### Extensions
 
