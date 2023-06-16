@@ -7,7 +7,7 @@ OBJECT_FILES  = $(SOURCE_FILES:.cpp=.o)
 
 LDFLAGS      += -shared
 CPPFLAGS     += 
-CXXFLAGS     += -Wall -Wfatal-errors $(OPTIMIZATION_FLAGS) -std=c++20  -fPIC-I. -I"$(AL_INCLUDE)" -I"$(LIB_APRS_IS_INCLUDE)" -I"../../"
+CXXFLAGS     += -Wall -Wfatal-errors $(OPTIMIZATION_FLAGS) -std=c++20 -fPIC -I. -I"$(AL_INCLUDE)" -I"$(LIB_APRS_IS_INCLUDE)" -I"../../"
 
 ifdef COMPILER
 	ifeq ($(COMPILER), GNU)
