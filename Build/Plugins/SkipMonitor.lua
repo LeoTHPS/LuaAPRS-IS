@@ -17,7 +17,7 @@ function SkipMonitor.Init(aprs_callsign, aprs_is_passcode, aprs_is_host, aprs_is
 		local packet_path            = APRS.Packet.GetDigiPath(packet);
 		local packet_path_first_digi = SkipMonitor.Private.GetFirstDigi(packet_path);
 
-		if packet_path_first_digi then
+		if packet_path_first_digi and (packet_path_first_digi ~= packet_sender) then
 			if not SkipMonitor.Private.IsPathIgnored(packet_path_first_digi) then
 				local packet_path_first_digi_distance_ft = packet_path_first_digi and SkipMonitor.Private.GetStationDistanceToStation(packet_sender, packet_path_first_digi) or nil;
 
@@ -29,7 +29,7 @@ function SkipMonitor.Init(aprs_callsign, aprs_is_passcode, aprs_is_host, aprs_is
 					end
 				end
 			end
-		else
+		elseif packet_igate ~= packet_sender then
 			local packet_igate_distance_ft = SkipMonitor.Private.GetStationDistanceToStation(packet_sender, packet_igate);
 
 			if packet_igate_distance_ft then
