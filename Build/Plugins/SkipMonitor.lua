@@ -17,26 +17,30 @@ function SkipMonitor.Init(aprs_callsign, aprs_is_passcode, aprs_is_host, aprs_is
 		local packet_path            = APRS.Packet.GetDigiPath(packet);
 		local packet_path_first_digi = SkipMonitor.Private.GetFirstDigi(packet_path);
 
-		if packet_path_first_digi and (packet_path_first_digi ~= packet_sender) then
-			if not SkipMonitor.Private.IsPathIgnored(packet_path_first_digi) then
-				local packet_path_first_digi_distance_ft = packet_path_first_digi and SkipMonitor.Private.GetStationDistanceToStation(packet_sender, packet_path_first_digi) or nil;
+		if not SkipMonitor.Private.IsSenderIgnored(packet_sender) then
+			if packet_path_first_digi and (packet_path_first_digi ~= packet_sender) then
+				if not SkipMonitor.Private.IsPathIgnored(packet_path_first_digi) then
+					local packet_path_first_digi_distance_ft = packet_path_first_digi and SkipMonitor.Private.GetStationDistanceToStation(packet_sender, packet_path_first_digi) or nil;
 
-				if packet_path_first_digi_distance_ft then
-					local packet_path_first_digi_distance_miles = packet_path_first_digi_distance_ft / 5280;
-		
-					if packet_path_first_digi_distance_miles >= threshold_miles then
-						SkipMonitor.Events.ExecuteEvent(SkipMonitor.Events.OnSkipDetected, packet_sender, packet_path_first_digi, packet_path_first_digi_distance_miles, packet_path, packet_igate);
+					if packet_path_first_digi_distance_ft then
+						local packet_path_first_digi_distance_miles = packet_path_first_digi_distance_ft / 5280;
+
+						if packet_path_first_digi_distance_miles >= threshold_miles then
+							SkipMonitor.Events.ExecuteEvent(SkipMonitor.Events.OnSkipDetected, packet_sender, packet_path_first_digi, packet_path_first_digi_distance_miles, packet_path, packet_igate);
+						end
 					end
 				end
-			end
-		elseif packet_igate ~= packet_sender then
-			local packet_igate_distance_ft = SkipMonitor.Private.GetStationDistanceToStation(packet_sender, packet_igate);
+			elseif packet_igate ~= packet_sender then
+				if not SkipMonitor.Private.IsIGateIgnored(packet_igate) then
+					local packet_igate_distance_ft = SkipMonitor.Private.GetStationDistanceToStation(packet_sender, packet_igate);
 
-			if packet_igate_distance_ft then
-				local packet_igate_distance_miles = packet_igate_distance_ft / 5280;
+					if packet_igate_distance_ft then
+						local packet_igate_distance_miles = packet_igate_distance_ft / 5280;
 
-				if packet_igate_distance_miles >= threshold_miles then
-					SkipMonitor.Events.ExecuteEvent(SkipMonitor.Events.OnSkipDetected, packet_sender, packet_igate, packet_igate_distance_miles, packet_path, packet_igate);
+						if packet_igate_distance_miles >= threshold_miles then
+							SkipMonitor.Events.ExecuteEvent(SkipMonitor.Events.OnSkipDetected, packet_sender, packet_igate, packet_igate_distance_miles, packet_path, packet_igate);
+						end
+					end
 				end
 			end
 		end
@@ -70,6 +74,30 @@ function SkipMonitor.IgnorePath(pattern, set)
 	end
 end
 
+function SkipMonitor.IgnoreIGate(pattern, set)
+	if not SkipMonitor.Private.IgnoredIGates then
+		SkipMonitor.Private.IgnoredIGates = {};
+	end
+
+	if set then
+		SkipMonitor.Private.IgnoredIGates[pattern] = true;
+	else
+		SkipMonitor.Private.IgnoredIGates[pattern] = nil;
+	end
+end
+
+function SkipMonitor.IgnoreSender(pattern, set)
+	if not SkipMonitor.Private.IgnoredSenders then
+		SkipMonitor.Private.IgnoredSenders = {};
+	end
+
+	if set then
+		SkipMonitor.Private.IgnoredSenders[pattern] = true;
+	else
+		SkipMonitor.Private.IgnoredSenders[pattern] = nil;
+	end
+end
+
 SkipMonitor.Events                = {};
 SkipMonitor.Events.OnSkipDetected = {}; -- function(sender, receiver, distance, path, igate)
 
@@ -94,6 +122,30 @@ SkipMonitor.Private = {};
 function SkipMonitor.Private.IsPathIgnored(value)
 	if SkipMonitor.Private.IgnoredPaths then
 		for pattern, _ in pairs(SkipMonitor.Private.IgnoredPaths) do
+			if string.match(value, pattern) then
+				return true;
+			end
+		end
+	end
+
+	return false;
+end
+
+function SkipMonitor.Private.IsIGateIgnored(value)
+	if SkipMonitor.Private.IgnoredIGates then
+		for pattern, _ in pairs(SkipMonitor.Private.IgnoredIGates) do
+			if string.match(value, pattern) then
+				return true;
+			end
+		end
+	end
+
+	return false;
+end
+
+function SkipMonitor.Private.IsSenderIgnored(value)
+	if SkipMonitor.Private.IgnoredSenders then
+		for pattern, _ in pairs(SkipMonitor.Private.IgnoredSenders) do
 			if string.match(value, pattern) then
 				return true;
 			end
