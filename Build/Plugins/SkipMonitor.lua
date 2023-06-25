@@ -8,6 +8,9 @@ function SkipMonitor.Init(aprs_callsign, aprs_is_passcode, aprs_is_host, aprs_is
 		return false;
 	end
 
+	SkipMonitor.IgnorePath('WIDE%d*');
+	SkipMonitor.IgnorePath('WIDE%d+-%d+');
+
 	Gateway.Events.RegisterEvent(Gateway.Events.OnReceivePacket, function(packet)
 		local packet_sender          = APRS.Packet.GetSender(packet);
 		local packet_igate           = APRS.Packet.GetIGate(packet);
@@ -15,13 +18,15 @@ function SkipMonitor.Init(aprs_callsign, aprs_is_passcode, aprs_is_host, aprs_is
 		local packet_path_first_digi = SkipMonitor.Private.GetFirstDigi(packet_path);
 
 		if packet_path_first_digi then
-			local packet_path_first_digi_distance_ft = packet_path_first_digi and SkipMonitor.Private.GetStationDistanceToStation(packet_sender, packet_path_first_digi) or nil;
+			if not SkipMonitor.Private.IsPathIgnored(packet_path_first_digi) then
+				local packet_path_first_digi_distance_ft = packet_path_first_digi and SkipMonitor.Private.GetStationDistanceToStation(packet_sender, packet_path_first_digi) or nil;
 
-			if packet_path_first_digi_distance_ft then
-				local packet_path_first_digi_distance_miles = packet_path_first_digi_distance_ft / 5280;
-	
-				if packet_path_first_digi_distance_miles >= threshold_miles then
-					SkipMonitor.Events.ExecuteEvent(SkipMonitor.Events.OnSkipDetected, packet_sender, packet_path_first_digi, packet_path_first_digi_distance_miles, packet_path, packet_igate);
+				if packet_path_first_digi_distance_ft then
+					local packet_path_first_digi_distance_miles = packet_path_first_digi_distance_ft / 5280;
+		
+					if packet_path_first_digi_distance_miles >= threshold_miles then
+						SkipMonitor.Events.ExecuteEvent(SkipMonitor.Events.OnSkipDetected, packet_sender, packet_path_first_digi, packet_path_first_digi_distance_miles, packet_path, packet_igate);
+					end
 				end
 			end
 		else
@@ -53,6 +58,18 @@ function SkipMonitor.Run(interval_ms)
 	return true;
 end
 
+function SkipMonitor.IgnorePath(pattern, set)
+	if not SkipMonitor.Private.IgnoredPaths then
+		SkipMonitor.Private.IgnoredPaths = {};
+	end
+
+	if set then
+		SkipMonitor.Private.IgnoredPaths[pattern] = true;
+	else
+		SkipMonitor.Private.IgnoredPaths[pattern] = nil;
+	end
+end
+
 SkipMonitor.Events                = {};
 SkipMonitor.Events.OnSkipDetected = {}; -- function(sender, receiver, distance, path, igate)
 
@@ -73,6 +90,18 @@ function SkipMonitor.Events.UnregisterEvent(event, callback)
 end
 
 SkipMonitor.Private = {};
+
+function SkipMonitor.Private.IsPathIgnored(value)
+	if SkipMonitor.Private.IgnoredPaths then
+		for pattern, _ in pairs(SkipMonitor.Private.IgnoredPaths) do
+			if string.match(value, pattern) then
+				return true;
+			end
+		end
+	end
+
+	return false;
+end
 
 function SkipMonitor.Private.GetFirstDigi(path)
 	return string.match(path, '([^,]+)%*');
