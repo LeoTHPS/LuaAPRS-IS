@@ -206,7 +206,6 @@ function Gateway.Events.UnregisterEvent(event, callback)
 	for event_index, event_callback in ipairs(event) do
 		if event_callback == callback then
 			table.remove(event, event_index);
-
 			break;
 		end
 	end
