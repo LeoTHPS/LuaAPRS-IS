@@ -113,6 +113,28 @@ namespace APRS::IS
 		}
 
 		// @throw AL::Exception
+		static void Run(const AL::String& lua)
+		{
+			AL_ASSERT(
+				IsInitialized(),
+				"API not initialized"
+			);
+
+			try
+			{
+				API::lua.Run(lua);
+			}
+			catch (AL::Exception& exception)
+			{
+
+				throw AL::Exception(
+					AL::Move(exception),
+					"Error running lua"
+				);
+			}
+		}
+
+		// @throw AL::Exception
 		// @return false if file does not exist
 		static bool LoadScript(const AL::String& file, AL::int16& exitCode)
 		{

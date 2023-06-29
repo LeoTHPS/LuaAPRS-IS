@@ -35,6 +35,13 @@ Script =
 		return script_get_platform();
 	end,
 
+	Lua =
+	{
+		Eval = function(lua)
+			return script_lua_eval(tostring(lua));
+		end
+	},
+
 	ExitCodes =
 	{
 		Success     = SCRIPT_EXIT_CODE_SUCCESS,

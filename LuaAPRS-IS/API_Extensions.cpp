@@ -17,6 +17,8 @@ APRS_IS_API_DEFINE_Extension(Script,
 
 	APRS_IS_API_RegisterGlobalFunction(script_get_platform);
 
+	APRS_IS_API_RegisterGlobalFunction(script_lua_eval);
+
 	APRS_IS_API_RegisterGlobalFunction(script_load_extension);
 	APRS_IS_API_RegisterGlobalFunction(script_unload_extension);
 })

@@ -1,6 +1,8 @@
 #include "API.hpp"
 #include "Script.hpp"
 
+#include <AL/OS/Console.hpp>
+
 AL::int16 script_exit_code;
 
 void                 script_init()
@@ -29,10 +31,33 @@ SCRIPT_PLATFORMS     script_get_platform()
 #endif
 }
 
+bool                 script_lua_eval(const char* lua)
+{
+	try
+	{
+		APRS::IS::API::Run(lua);
+	}
+	catch (const AL::Exception& exception)
+	{
+		AL::OS::Console::WriteException(exception);
+
+		return false;
+	}
+
+	return true;
+}
+
 APRS::IS::Extension* script_load_extension(const char* path)
 {
-	if (auto extension = APRS::IS::API::LoadExtension(path))
-		return extension;
+	try
+	{
+		if (auto extension = APRS::IS::API::LoadExtension(path))
+			return extension;
+	}
+	catch (const AL::Exception& exception)
+	{
+		AL::OS::Console::WriteException(exception);
+	}
 
 	return nullptr;
 }

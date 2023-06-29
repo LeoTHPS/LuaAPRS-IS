@@ -27,5 +27,7 @@ void                 script_set_exit_code(AL::int16 value);
 
 SCRIPT_PLATFORMS     script_get_platform();
 
+bool                 script_lua_eval(const char* lua);
+
 APRS::IS::Extension* script_load_extension(const char* path);
 void                 script_unload_extension(APRS::IS::Extension* extension);
