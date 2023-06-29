@@ -6,6 +6,11 @@ WebRequest =
 		Post = WEB_REQUEST_HTTP_METHOD_POST
 	},
 
+	HTTP_StatusCodes =
+	{
+		OK = WEB_REQUEST_HTTP_STATUS_CODE_OK,
+	},
+
 	Init = function(method)
 		return web_request_init(method);
 	end,
@@ -26,6 +31,7 @@ WebRequest =
 		return web_request_execute(web_request, tostring(uri));
 	end,
 
+	-- @return status_code, content
 	DownloadString = function(uri)
 		local web_request = WebRequest.Init(WebRequest.HTTP_Methods.Get);
 

@@ -8,10 +8,18 @@
 
 #include <AL/Collections/LinkedList.hpp>
 
-enum WEB_REQUEST_HTTP_METHODS : AL::uint8
+typedef typename AL::Get_Enum_Or_Integer_Base<AL::Network::HTTP::RequestMethods>::Type T_WEB_REQUEST_HTTP_METHODS;
+typedef typename AL::Get_Enum_Or_Integer_Base<AL::Network::HTTP::StatusCodes>::Type    T_WEB_REQUEST_HTTP_STATUS_CODES;
+
+enum WEB_REQUEST_HTTP_METHODS : T_WEB_REQUEST_HTTP_METHODS
 {
-	WEB_REQUEST_HTTP_METHOD_GET  = static_cast<AL::uint8>(AL::Network::HTTP::RequestMethods::GET),
-	WEB_REQUEST_HTTP_METHOD_POST = static_cast<AL::uint8>(AL::Network::HTTP::RequestMethods::POST)
+	WEB_REQUEST_HTTP_METHOD_GET  = static_cast<T_WEB_REQUEST_HTTP_METHODS>(AL::Network::HTTP::RequestMethods::GET),
+	WEB_REQUEST_HTTP_METHOD_POST = static_cast<T_WEB_REQUEST_HTTP_METHODS>(AL::Network::HTTP::RequestMethods::POST)
+};
+
+enum WEB_REQUEST_HTTP_STATUS_CODES : T_WEB_REQUEST_HTTP_STATUS_CODES
+{
+	WEB_REQUEST_HTTP_STATUS_CODE_OK = static_cast<T_WEB_REQUEST_HTTP_STATUS_CODES>(AL::Network::HTTP::StatusCodes::OK)
 };
 
 struct web_response
@@ -112,6 +120,8 @@ LUA_APRS_IS_EXTENSION_INIT([](Extension& extension)
 	LUA_APRS_IS_RegisterGlobal(WEB_REQUEST_HTTP_METHOD_GET);
 	LUA_APRS_IS_RegisterGlobal(WEB_REQUEST_HTTP_METHOD_POST);
 
+	LUA_APRS_IS_RegisterGlobal(WEB_REQUEST_HTTP_STATUS_CODE_OK);
+
 	LUA_APRS_IS_RegisterGlobalFunction(web_request_init);
 	LUA_APRS_IS_RegisterGlobalFunction(web_request_deinit);
 
@@ -128,6 +138,8 @@ LUA_APRS_IS_EXTENSION_DEINIT([](Extension& extension)
 {
 	LUA_APRS_IS_UnregisterGlobal(WEB_REQUEST_HTTP_METHOD_GET);
 	LUA_APRS_IS_UnregisterGlobal(WEB_REQUEST_HTTP_METHOD_POST);
+
+	LUA_APRS_IS_UnregisterGlobal(WEB_REQUEST_HTTP_STATUS_CODE_OK);
 
 	LUA_APRS_IS_UnregisterGlobalFunction(web_request_init);
 	LUA_APRS_IS_UnregisterGlobalFunction(web_request_deinit);
