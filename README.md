@@ -22,8 +22,8 @@
 | [Mutex](LuaAPRS-IS/Extensions/Mutex/)           |                                    |                                       |                                         |                                                 |
 | [N2YO](LuaAPRS-IS/Extensions/N2YO/)             | *                                  |                                       | *                                       |                                                 |
 | [Process](LuaAPRS-IS/Extensions/Process/)       |                                    |                                       |                                         |                                                 |
-| [Socket](LuaAPRS-IS/Extensions/Socket/)         |                                    |                                       |                                         |                                                 |
 | [Script](LuaAPRS-IS/Extensions/)                |                                    |                                       |                                         |                                                 |
+| [Socket](LuaAPRS-IS/Extensions/Socket/)         |                                    |                                       |                                         |                                                 |
 | [SQLite3](LuaAPRS-IS/Extensions/SQLite3)        |                                    | *                                     |                                         |                                                 |
 | [System](LuaAPRS-IS/Extensions/System/)         |                                    |                                       |                                         |                                                 |
 | [Thread](LuaAPRS-IS/Extensions/Thread/)         |                                    |                                       |                                         |                                                 |
@@ -32,11 +32,12 @@
 
 #### Plugins
 
-|                                              | Console | Discord | Loop | Mutex | N2YO | Process | Script | SQLite3 | System | Thread | Types | WebRequest |
-| -------------------------------------------- | :-----: | :-----: | :--: | :---: | :--: | :-----: | :----: | :-----: | :----: | :----: | :---: | :--------: |
-| [Gateway](Build/Plugins/Gateway.lua)         | *       |         | *    | *     |      |         | *      | *       | *      |        |       |            |
-| [Outside](Build/Plugins/Outside.lua)         | *       | *       | *    | *     |      |         | *      | *       | *      |        |       |            |
-| [SkipMonitor](Build/Plugins/SkipMonitor.lua) | *       |         | *    | *     |      |         | *      | *       | *      |        |       |            |
+|                                              | ByteBuffer | Console | Discord | Loop | Mutex | N2YO | Process | Script | Socket | SQLite3 | System | Thread | Types | WebRequest |
+| -------------------------------------------- | :--------: | :-----: | :-----: | :--: | :---: | :--: | :-----: | :----: | :----: | :-----: | :----: | :----: | :---: | :--------: |
+| [Gateway](Build/Plugins/Gateway.lua)         |            | *       |         | *    | *     |      |         | *      |        | *       | *      |        |       |            |
+| [Outside](Build/Plugins/Outside.lua)         |            | *       | *       | *    | *     |      |         | *      |        | *       | *      |        |       |            |
+| [FireWatch](Build/Plugins/FireWatch.lua)     | *          | *       |         | *    | *     |      |         | *      | *      | *       | *      |        |       |            |
+| [SkipMonitor](Build/Plugins/SkipMonitor.lua) |            | *       |         | *    | *     |      |         | *      |        | *       | *      |        |       |            |
 
 <hr />
 
