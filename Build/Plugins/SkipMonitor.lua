@@ -8,8 +8,8 @@ function SkipMonitor.Init(aprs_callsign, aprs_is_passcode, aprs_is_host, aprs_is
 		return false;
 	end
 
-	SkipMonitor.IgnorePath('WIDE%d*');
-	SkipMonitor.IgnorePath('WIDE%d+-%d+');
+	SkipMonitor.IgnoreDigi('WIDE%d*');
+	SkipMonitor.IgnoreDigi('WIDE%d+-%d+');
 
 	Gateway.Events.RegisterEvent(Gateway.Events.OnReceivePacket, function(packet)
 		local packet_sender          = APRS.Packet.GetSender(packet);
@@ -19,7 +19,7 @@ function SkipMonitor.Init(aprs_callsign, aprs_is_passcode, aprs_is_host, aprs_is
 
 		if not SkipMonitor.Private.IsSenderIgnored(packet_sender) then
 			if packet_path_first_digi and (packet_path_first_digi ~= packet_sender) then
-				if not SkipMonitor.Private.IsPathIgnored(packet_path_first_digi) then
+				if not SkipMonitor.Private.IsDigiIgnored(packet_path_first_digi) then
 					local packet_path_first_digi_distance_ft = packet_path_first_digi and SkipMonitor.Private.GetStationDistanceToStation(packet_sender, packet_path_first_digi) or nil;
 
 					if packet_path_first_digi_distance_ft then
@@ -62,15 +62,15 @@ function SkipMonitor.Run(interval_ms)
 	return true;
 end
 
-function SkipMonitor.IgnorePath(pattern, set)
-	if not SkipMonitor.Private.IgnoredPaths then
-		SkipMonitor.Private.IgnoredPaths = {};
+function SkipMonitor.IgnoreDigi(pattern, set)
+	if not SkipMonitor.Private.IgnoredDigis then
+		SkipMonitor.Private.IgnoredDigis = {};
 	end
 
 	if set then
-		SkipMonitor.Private.IgnoredPaths[pattern] = true;
+		SkipMonitor.Private.IgnoredDigis[pattern] = true;
 	else
-		SkipMonitor.Private.IgnoredPaths[pattern] = nil;
+		SkipMonitor.Private.IgnoredDigis[pattern] = nil;
 	end
 end
 
@@ -119,9 +119,9 @@ end
 
 SkipMonitor.Private = {};
 
-function SkipMonitor.Private.IsPathIgnored(value)
-	if SkipMonitor.Private.IgnoredPaths then
-		for pattern, _ in pairs(SkipMonitor.Private.IgnoredPaths) do
+function SkipMonitor.Private.IsDigiIgnored(value)
+	if SkipMonitor.Private.IgnoredDigis then
+		for pattern, _ in pairs(SkipMonitor.Private.IgnoredDigis) do
 			if string.match(value, pattern) then
 				return true;
 			end
