@@ -14,13 +14,15 @@
 #### Extensions
 
 |                                                 | [json](//github.com/nlohmann/json) | [SQLite3](//github.com/sqlite/sqlite) | [OpenSSL](//github.com/openssl/openssl) | [Discord RPC](//github.com/discord/discord-rpc) |
-| ----------------------------------------------- | :--------------------------------: | :-----------------------------------: | :-------------------------------------: | :---------------------------------------------: |
+| ----------------------------------------------- | :--------------------------------: | :-----------------------------------: | :-------------------------------------: | :-------------------------------------------:   |
+| [ByteBuffer](LuaAPRS-IS/Extensions/ByteBuffer/) |                                    |                                       |                                         |                                                 |
 | [Console](LuaAPRS-IS/Extensions/Console/)       |                                    |                                       |                                         |                                                 |
 | [Discord](LuaAPRS-IS/Extensions/Discord/)       |                                    |                                       |                                         | *                                               |
 | [Loop](LuaAPRS-IS/Extensions/Loop/)             |                                    |                                       |                                         |                                                 |
 | [Mutex](LuaAPRS-IS/Extensions/Mutex/)           |                                    |                                       |                                         |                                                 |
 | [N2YO](LuaAPRS-IS/Extensions/N2YO/)             | *                                  |                                       | *                                       |                                                 |
 | [Process](LuaAPRS-IS/Extensions/Process/)       |                                    |                                       |                                         |                                                 |
+| [Socket](LuaAPRS-IS/Extensions/Socket/)         |                                    |                                       |                                         |                                                 |
 | [Script](LuaAPRS-IS/Extensions/)                |                                    |                                       |                                         |                                                 |
 | [SQLite3](LuaAPRS-IS/Extensions/SQLite3)        |                                    | *                                     |                                         |                                                 |
 | [System](LuaAPRS-IS/Extensions/System/)         |                                    |                                       |                                         |                                                 |
