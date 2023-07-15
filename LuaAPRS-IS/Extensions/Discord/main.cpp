@@ -3,12 +3,8 @@
 #include "discord_rpc.h"
 #include "Extension.hpp"
 
-#include <AL/OS/Thread.hpp>
-#include <AL/OS/Window.hpp>
 #include <AL/OS/Console.hpp>
 #include <AL/OS/Process.hpp>
-
-#include <AL/Game/Loop.hpp>
 
 #include <AL/FileSystem/Path.hpp>
 
@@ -99,8 +95,6 @@ struct discord_rich_presence
 	AL::OS::Process                                   process;
 	AL::OS::ProcessLibrary                            library;
 
-	AL::OS::Thread                                    thread;
-	AL::OS::Window*                                   window;
 	Discord                                           discord;
 	DiscordRichPresence                               presence;
 	DiscordRichPresenceStorage                        presence_storage;
@@ -119,152 +113,6 @@ discord_rich_presence discord_rich_presence_instance;
 
 void discord_rich_presence_deinit();
 
-void discord_rich_presence_window_thread_main()
-{
-	discord_rich_presence_instance.window = new AL::OS::Window(
-		"discord_rich_presence_window",
-		"discord_rich_presence"
-	);
-
-	try
-	{
-		try
-		{
-			discord_rich_presence_instance.window->Open();
-		}
-		catch (AL::Exception& exception)
-		{
-
-			throw AL::Exception(
-				AL::Move(exception),
-				"Error opening AL::OS::Window"
-			);
-		}
-	}
-	catch (const AL::Exception& exception)
-	{
-		delete discord_rich_presence_instance.window;
-
-		AL::OS::Console::WriteException(
-			exception
-		);
-
-		return;
-	}
-
-#if defined(AL_PLATFORM_LINUX)
-	// TODO: minimize
-#elif defined(AL_PLATFORM_WINDOWS)
-	ShowWindow(discord_rich_presence_instance.window->GetHandle(), SW_MINIMIZE);
-#endif
-
-	AL::Game::Loop::Run(4, [](AL::TimeSpan _delta)
-	{
-		if (discord_rich_presence_instance.window->IsOpen())
-		{
-			try
-			{
-				try
-				{
-					discord_rich_presence_instance.window->Update(
-						_delta
-					);
-				}
-				catch (AL::Exception& exception)
-				{
-
-					throw AL::Exception(
-						AL::Move(exception),
-						"Error updating AL::OS::Window"
-					);
-				}
-			}
-			catch (const AL::Exception& exception)
-			{
-				AL::OS::Console::WriteException(
-					exception
-				);
-
-				try
-				{
-					discord_rich_presence_instance.window->Close();
-				}
-				catch (const AL::Exception& exception)
-				{
-					AL::OS::Console::WriteLine(
-						"Error closing AL::OS::Window"
-					);
-
-					AL::OS::Console::WriteException(
-						exception
-					);
-				}
-			}
-		}
-		else if (discord_rich_presence_instance.is_thread_stopping)
-		{
-			discord_rich_presence_instance.is_thread_stopping = false;
-
-			return false;
-		}
-
-		return true;
-	});
-
-	delete discord_rich_presence_instance.window;
-}
-bool discord_rich_presence_window_thread_start()
-{
-	try
-	{
-		try
-		{
-			discord_rich_presence_instance.thread.Start(
-				&discord_rich_presence_window_thread_main
-			);
-		}
-		catch (AL::Exception& exception)
-		{
-
-			throw AL::Exception(
-				AL::Move(exception),
-				"Error starting AL::OS::Thread"
-			);
-		}
-	}
-	catch (const AL::Exception& exception)
-	{
-		AL::OS::Console::WriteException(
-			exception
-		);
-
-		return false;
-	}
-
-	return true;
-}
-void discord_rich_presence_window_thread_stop()
-{
-	discord_rich_presence_instance.is_thread_stopping = true;
-
-	try
-	{
-		discord_rich_presence_instance.thread.Join();
-	}
-	catch (const AL::Exception& exception)
-	{
-		AL::OS::Console::WriteLine(
-			"Error joining AL::OS::Thread"
-		);
-
-		AL::OS::Console::WriteException(
-			exception
-		);
-	}
-
-	discord_rich_presence_instance.is_thread_stopping = false;
-}
-
 void discord_rich_presence_set_event_handlers(discord_rich_presence_event_handler_ready&& ready, discord_rich_presence_event_handler_disconnected&& disconnect, discord_rich_presence_event_handler_errored&& errored, discord_rich_presence_event_handler_join_game&& join_game, discord_rich_presence_event_handler_join_request&& join_request, discord_rich_presence_event_handler_spectate_game&& spectate_game)
 {
 	discord_rich_presence_instance.on_ready         = AL::Move(ready);
@@ -281,12 +129,6 @@ bool discord_rich_presence_init(const char* application_id, discord_rich_presenc
 	{
 
 		discord_rich_presence_deinit();
-	}
-
-	if (!discord_rich_presence_window_thread_start())
-	{
-
-		return false;
 	}
 
 	try
@@ -357,8 +199,6 @@ bool discord_rich_presence_init(const char* application_id, discord_rich_presenc
 	}
 	catch (const AL::Exception& exception)
 	{
-		discord_rich_presence_window_thread_stop();
-
 		AL::OS::Console::WriteException(
 			exception
 		);
@@ -371,21 +211,6 @@ bool discord_rich_presence_init(const char* application_id, discord_rich_presenc
 	discord_rich_presence_instance.event_handlers.ready = [](const DiscordUser* request)
 	{
 		discord_rich_presence_instance.on_ready(request->userId, request->username, request->discriminator, request->avatar);
-
-		try
-		{
-			discord_rich_presence_instance.window->Close();
-		}
-		catch (const AL::Exception& exception)
-		{
-			AL::OS::Console::WriteLine(
-				"Error closing AL::OS::Window"
-			);
-
-			AL::OS::Console::WriteException(
-				exception
-			);
-		}
 	};
 	discord_rich_presence_instance.event_handlers.disconnected = [](int errorCode, const char* message)
 	{
@@ -418,8 +243,6 @@ void discord_rich_presence_deinit()
 {
 	if (discord_rich_presence_instance.is_initialized)
 	{
-		discord_rich_presence_window_thread_stop();
-
 		discord_rich_presence_instance.on_disconnected(0, "Shutdown");
 
 		discord_rich_presence_instance.discord.Shutdown();
