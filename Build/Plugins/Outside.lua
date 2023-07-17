@@ -510,19 +510,17 @@ function Outside.Private.Discord.Presence.RemoveButton(button)
 end
 
 function Outside.Private.Discord.EventHandlers.OnReady(user_id, user_name, user_username, user_flags, user_premium)
-	Console.WriteLine('Discord', string.format('Ready [User.ID: %s, User.Name: %s, User.Username: %s, User.Flags: 0x%04X, User.Premium: %u]', user_id, user_name, user_username, user_flags, user_premium));
 end
 
 function Outside.Private.Discord.EventHandlers.OnError(error_code, error_message)
-	Console.WriteLine('Discord', string.format('Error [Code: %u, Message: %s]', error_code, error_message));
+	Console.WriteLine('Discord', string.format('Error %u - %s', error_code, error_message));
 end
 
 function Outside.Private.Discord.EventHandlers.OnConnect()
-	Console.WriteLine('Discord', string.format('Connected'));
 end
 
 function Outside.Private.Discord.EventHandlers.OnDisconnect(error_code, error_message)
-	Console.WriteLine('Discord', string.format('Disconnected [Code: %u, Message: %s]', error_code, error_message));
+	Console.WriteLine('Discord', string.format('Disconnected %u - %s', error_code, error_message));
 end
 
 Outside.Events                       = {};
