@@ -6,24 +6,17 @@
 
 #include <AL/OS/Console.hpp>
 
-struct discord_rpc
-{
-	DiscordRPC::RichPresence  rich_presence;
-	DiscordRPC::IPCConnection ipc_connection;
-};
+typedef DiscordRPC::IPCConnection discord_rpc;
+typedef DiscordRPC::RichPresence  discord_rpc_presence;
+typedef DiscordRPC::Button        discord_rpc_presence_button;
 
-typedef AL::uint32 discord_rpc_button_index;
-
-discord_rpc*                                           discord_rpc_init(const char* application_id)
+discord_rpc*                 discord_rpc_init(const char* application_id)
 {
-	auto discord_rpc = new ::discord_rpc
-	{
-		.ipc_connection = DiscordRPC::IPCConnection(application_id)
-	};
+	auto discord_rpc = new ::discord_rpc(application_id);
 
 	try
 	{
-		if (!discord_rpc->ipc_connection.Open())
+		if (!discord_rpc->Open())
 		{
 
 			throw AL::Exception(
@@ -44,33 +37,33 @@ discord_rpc*                                           discord_rpc_init(const ch
 
 	return discord_rpc;
 }
-void                                                   discord_rpc_deinit(discord_rpc* discord_rpc)
+void                         discord_rpc_deinit(discord_rpc* discord_rpc)
 {
 	if (discord_rpc != nullptr)
 	{
-		discord_rpc->ipc_connection.Close();
+		discord_rpc->Close();
 
 		delete discord_rpc;
 	}
 }
 
-bool                                                   discord_rpc_poll(discord_rpc* discord_rpc)
+bool                         discord_rpc_poll(discord_rpc* discord_rpc)
 {
-	if (!discord_rpc || !discord_rpc->ipc_connection.IsOpen())
+	if (!discord_rpc || !discord_rpc->IsOpen())
 		return false;
 
 	try
 	{
-		if (!discord_rpc->ipc_connection.Poll())
+		if (!discord_rpc->Poll())
 		{
-			discord_rpc->ipc_connection.Close();
+			discord_rpc->Close();
 
 			return false;
 		}
 	}
 	catch (const AL::Exception& exception)
 	{
-		discord_rpc->ipc_connection.Close();
+		discord_rpc->Close();
 
 		AL::OS::Console::WriteException(
 			exception
@@ -81,17 +74,15 @@ bool                                                   discord_rpc_poll(discord_
 
 	return true;
 }
-
-bool                                                   discord_rpc_presence_refresh(discord_rpc* discord_rpc)
+bool                         discord_rpc_update_presence(discord_rpc* discord_rpc, discord_rpc_presence* presence)
 {
-	if (!discord_rpc || !discord_rpc->ipc_connection.IsOpen())
+	if (discord_rpc == nullptr)
 		return false;
 
 	try
 	{
-		if (!discord_rpc->ipc_connection.UpdatePresence(discord_rpc->rich_presence))
+		if (!discord_rpc->UpdatePresence(*presence))
 		{
-			discord_rpc->ipc_connection.Close();
 
 			return false;
 		}
@@ -107,113 +98,168 @@ bool                                                   discord_rpc_presence_refr
 
 	return true;
 }
-bool                                                   discord_rpc_presence_clear(discord_rpc* discord_rpc)
+
+discord_rpc_presence*        discord_rpc_presence_init()
 {
-	if (discord_rpc == nullptr)
-		return false;
-
-	discord_rpc->rich_presence = DiscordRPC::RichPresence();
-
-	return discord_rpc_presence_refresh(discord_rpc);
-}
-bool                                                   discord_rpc_presence_update(discord_rpc* discord_rpc, const char* header, const char* details, AL::uint32 timestamp_start, AL::uint32 timestamp_end, const char* large_image_key, const char* large_image_text, const char* small_image_key, const char* small_image_text)
-{
-	if (discord_rpc == nullptr)
-		return false;
-
-	static const char STRING_EMPTY[] = "";
-
-	discord_rpc->rich_presence.Header          = header ? header : STRING_EMPTY;
-	discord_rpc->rich_presence.Details         = details ? details : STRING_EMPTY;
-	discord_rpc->rich_presence.TimeStart       = AL::Timestamp::FromSeconds(timestamp_start);
-	discord_rpc->rich_presence.TimeEnd         = AL::Timestamp::FromSeconds(timestamp_end);
-	discord_rpc->rich_presence.ImageLarge.Key  = large_image_key ? large_image_key : STRING_EMPTY;
-	discord_rpc->rich_presence.ImageLarge.Text = large_image_text ? large_image_text : STRING_EMPTY;
-	discord_rpc->rich_presence.ImageSmall.Key  = small_image_key ? small_image_key : STRING_EMPTY;
-	discord_rpc->rich_presence.ImageSmall.Text = small_image_text ? small_image_text : STRING_EMPTY;
-
-	return discord_rpc_presence_refresh(discord_rpc);
-}
-
-discord_rpc_button_index                               discord_rpc_presence_buttons_get_count(discord_rpc* discord_rpc)
-{
-	return static_cast<discord_rpc_button_index>(discord_rpc ? discord_rpc->rich_presence.Buttons.GetSize() : 0);
-}
-// @return success, button_index
-AL::Collections::Tuple<bool, discord_rpc_button_index> discord_rpc_presence_buttons_find(discord_rpc* discord_rpc, const char* label)
-{
-	AL::Collections::Tuple<bool, discord_rpc_button_index> value(false, 0);
-
-	if (discord_rpc != nullptr)
+	auto presence = new discord_rpc_presence
 	{
-		discord_rpc_button_index button_index = 0;
+	};
 
-		for (auto& button : discord_rpc->rich_presence.Buttons)
+	return presence;
+}
+void                         discord_rpc_presence_deinit(discord_rpc_presence* presence)
+{
+	if (presence != nullptr)
+		delete presence;
+}
+const char*                  discord_rpc_presence_get_header(discord_rpc_presence* presence)
+{
+	return presence ? presence->Header.GetCString() : nullptr;
+}
+void                         discord_rpc_presence_set_header(discord_rpc_presence* presence, const char* value)
+{
+	if (presence != nullptr)
+		presence->Header = value;
+}
+const char*                  discord_rpc_presence_get_details(discord_rpc_presence* presence)
+{
+	return presence ? presence->Details.GetCString() : nullptr;
+}
+void                         discord_rpc_presence_set_details(discord_rpc_presence* presence, const char* value)
+{
+	if (presence != nullptr)
+		presence->Details = value;
+}
+AL::uint32                   discord_rpc_presence_get_time_start(discord_rpc_presence* presence)
+{
+	return static_cast<AL::uint32>(presence ? presence->TimeStart.ToSeconds() : 0);
+}
+void                         discord_rpc_presence_set_time_start(discord_rpc_presence* presence, AL::uint32 value)
+{
+	if (presence != nullptr)
+		presence->TimeStart = AL::Timestamp::FromSeconds(value);
+}
+AL::uint32                   discord_rpc_presence_get_time_end(discord_rpc_presence* presence)
+{
+	return static_cast<AL::uint32>(presence ? presence->TimeEnd.ToSeconds() : 0);
+}
+void                         discord_rpc_presence_set_time_end(discord_rpc_presence* presence, AL::uint32 value)
+{
+	if (presence != nullptr)
+		presence->TimeEnd = AL::Timestamp::FromSeconds(value);
+}
+discord_rpc_presence_button* discord_rpc_presence_get_button(discord_rpc_presence* presence, AL::uint32 index)
+{
+	if (presence != nullptr)
+	{
+		for (auto& button : presence->Buttons)
 		{
-			if (button.Label.Compare(label, AL::True))
+			if (--index == 0)
 			{
-				value.Set<0>(true);
-				value.Set<1>(button_index + 1);
 
-				break;
+				return &button;
 			}
-
-			++button_index;
 		}
 	}
 
-	return value;
+	return nullptr;
 }
-// @return success, button_index
-AL::Collections::Tuple<bool, discord_rpc_button_index> discord_rpc_presence_buttons_add(discord_rpc* discord_rpc, const char* label, const char* url, bool auto_refresh)
+AL::uint32                   discord_rpc_presence_get_button_count(discord_rpc_presence* presence)
 {
-	AL::Collections::Tuple<bool, discord_rpc_button_index> value(false, 0);
-
-	if (discord_rpc != nullptr)
+	return static_cast<AL::uint32>(presence ? presence->Buttons.GetSize() : 0);
+}
+const char*                  discord_rpc_presence_get_image_large_key(discord_rpc_presence* presence)
+{
+	return presence ? presence->ImageLarge.Key.GetCString() : nullptr;
+}
+void                         discord_rpc_presence_set_image_large_key(discord_rpc_presence* presence, const char* value)
+{
+	if (presence != nullptr)
+		presence->ImageLarge.Key = value;
+}
+const char*                  discord_rpc_presence_get_image_large_text(discord_rpc_presence* presence)
+{
+	return presence ? presence->ImageLarge.Text.GetCString() : nullptr;
+}
+void                         discord_rpc_presence_set_image_large_text(discord_rpc_presence* presence, const char* value)
+{
+	if (presence != nullptr)
+		presence->ImageLarge.Text = value;
+}
+const char*                  discord_rpc_presence_get_image_small_key(discord_rpc_presence* presence)
+{
+	return presence ? presence->ImageSmall.Key.GetCString() : nullptr;
+}
+void                         discord_rpc_presence_set_image_small_key(discord_rpc_presence* presence, const char* value)
+{
+	if (presence != nullptr)
+		presence->ImageSmall.Key = value;
+}
+const char*                  discord_rpc_presence_get_image_small_text(discord_rpc_presence* presence)
+{
+	return presence ? presence->ImageSmall.Text.GetCString() : nullptr;
+}
+void                         discord_rpc_presence_set_image_small_text(discord_rpc_presence* presence, const char* value)
+{
+	if (presence != nullptr)
+		presence->ImageSmall.Text = value;
+}
+discord_rpc_presence_button* discord_rpc_presence_buttons_add(discord_rpc_presence* presence, const char* label, const char* url)
+{
+	if (presence != nullptr)
 	{
-		discord_rpc->rich_presence.Buttons.PushBack(
+		presence->Buttons.PushBack(
 			{
 				.URL   = url,
 				.Label = label
 			}
 		);
 
-		value.Set<0>(!auto_refresh || discord_rpc_presence_refresh(discord_rpc));
-		value.Set<1>(static_cast<discord_rpc_button_index>(discord_rpc->rich_presence.Buttons.GetSize()));
+		return &(*--presence->Buttons.end());
 	}
 
-	return value;
+	return nullptr;
 }
-bool                                                   discord_rpc_presence_buttons_remove(discord_rpc* discord_rpc, discord_rpc_button_index button_index, bool auto_refresh)
+void                         discord_rpc_presence_buttons_remove(discord_rpc_presence* presence, discord_rpc_presence_button* button)
 {
-	if (discord_rpc == nullptr)
-		return false;
-
-	if (discord_rpc->rich_presence.Buttons.GetSize() < button_index)
-		return false;
-
-	for (auto it = discord_rpc->rich_presence.Buttons.begin(); it != discord_rpc->rich_presence.Buttons.end(); ++it)
+	if (presence != nullptr)
 	{
-		if (--button_index == 0)
+		for (auto it = presence->Buttons.begin(); it != presence->Buttons.end(); ++it)
 		{
-			discord_rpc->rich_presence.Buttons.Erase(
-				it
-			);
+			if (&(*it) == button)
+			{
+				presence->Buttons.Erase(
+					it
+				);
 
-			break;
+				break;
+			}
 		}
 	}
-
-	return !auto_refresh || discord_rpc_presence_refresh(discord_rpc);
 }
-bool                                                   discord_rpc_presence_buttons_clear(discord_rpc* discord_rpc, bool auto_refresh)
+void                         discord_rpc_presence_buttons_clear(discord_rpc_presence* presence)
 {
-	if (discord_rpc == nullptr)
-		return false;
+	if (presence != nullptr)
+		presence->Buttons.Clear();
+}
 
-	discord_rpc->rich_presence.Buttons.Clear();
-
-	return !auto_refresh || discord_rpc_presence_refresh(discord_rpc);
+const char*                  discord_rpc_presence_button_get_url(discord_rpc_presence_button* button)
+{
+	return button ? button->URL.GetCString() : nullptr;
+}
+void                         discord_rpc_presence_button_set_url(discord_rpc_presence_button* button, const char* value)
+{
+	if (button != nullptr)
+		button->URL = value;
+}
+const char*                  discord_rpc_presence_button_get_label(discord_rpc_presence_button* button)
+{
+	return button ? button->Label.GetCString() : nullptr;
+}
+void                         discord_rpc_presence_button_set_label(discord_rpc_presence_button* button, const char* value)
+{
+	if (button != nullptr)
+		button->Label = value;
 }
 
 LUA_APRS_IS_EXTENSION_INIT([](Extension& extension)
@@ -222,16 +268,36 @@ LUA_APRS_IS_EXTENSION_INIT([](Extension& extension)
 	LUA_APRS_IS_RegisterGlobalFunction(discord_rpc_deinit);
 
 	LUA_APRS_IS_RegisterGlobalFunction(discord_rpc_poll);
+	LUA_APRS_IS_RegisterGlobalFunction(discord_rpc_update_presence);
 
-	LUA_APRS_IS_RegisterGlobalFunction(discord_rpc_presence_clear);
-	LUA_APRS_IS_RegisterGlobalFunction(discord_rpc_presence_update);
-	LUA_APRS_IS_RegisterGlobalFunction(discord_rpc_presence_refresh);
-
-	LUA_APRS_IS_RegisterGlobalFunction(discord_rpc_presence_buttons_get_count);
-	LUA_APRS_IS_RegisterGlobalFunction(discord_rpc_presence_buttons_find);
+	LUA_APRS_IS_RegisterGlobalFunction(discord_rpc_presence_init);
+	LUA_APRS_IS_RegisterGlobalFunction(discord_rpc_presence_deinit);
+	LUA_APRS_IS_RegisterGlobalFunction(discord_rpc_presence_get_header);
+	LUA_APRS_IS_RegisterGlobalFunction(discord_rpc_presence_set_header);
+	LUA_APRS_IS_RegisterGlobalFunction(discord_rpc_presence_get_details);
+	LUA_APRS_IS_RegisterGlobalFunction(discord_rpc_presence_set_details);
+	LUA_APRS_IS_RegisterGlobalFunction(discord_rpc_presence_get_time_start);
+	LUA_APRS_IS_RegisterGlobalFunction(discord_rpc_presence_set_time_start);
+	LUA_APRS_IS_RegisterGlobalFunction(discord_rpc_presence_get_time_end);
+	LUA_APRS_IS_RegisterGlobalFunction(discord_rpc_presence_set_time_end);
+	LUA_APRS_IS_RegisterGlobalFunction(discord_rpc_presence_get_button);
+	LUA_APRS_IS_RegisterGlobalFunction(discord_rpc_presence_get_button_count);
+	LUA_APRS_IS_RegisterGlobalFunction(discord_rpc_presence_get_image_large_key);
+	LUA_APRS_IS_RegisterGlobalFunction(discord_rpc_presence_set_image_large_key);
+	LUA_APRS_IS_RegisterGlobalFunction(discord_rpc_presence_get_image_large_text);
+	LUA_APRS_IS_RegisterGlobalFunction(discord_rpc_presence_set_image_large_text);
+	LUA_APRS_IS_RegisterGlobalFunction(discord_rpc_presence_get_image_small_key);
+	LUA_APRS_IS_RegisterGlobalFunction(discord_rpc_presence_set_image_small_key);
+	LUA_APRS_IS_RegisterGlobalFunction(discord_rpc_presence_get_image_small_text);
+	LUA_APRS_IS_RegisterGlobalFunction(discord_rpc_presence_set_image_small_text);
 	LUA_APRS_IS_RegisterGlobalFunction(discord_rpc_presence_buttons_add);
 	LUA_APRS_IS_RegisterGlobalFunction(discord_rpc_presence_buttons_remove);
 	LUA_APRS_IS_RegisterGlobalFunction(discord_rpc_presence_buttons_clear);
+
+	LUA_APRS_IS_RegisterGlobalFunction(discord_rpc_presence_button_get_url);
+	LUA_APRS_IS_RegisterGlobalFunction(discord_rpc_presence_button_set_url);
+	LUA_APRS_IS_RegisterGlobalFunction(discord_rpc_presence_button_get_label);
+	LUA_APRS_IS_RegisterGlobalFunction(discord_rpc_presence_button_set_label);
 });
 
 LUA_APRS_IS_EXTENSION_DEINIT([](Extension& extension)
@@ -240,13 +306,34 @@ LUA_APRS_IS_EXTENSION_DEINIT([](Extension& extension)
 	LUA_APRS_IS_UnregisterGlobalFunction(discord_rpc_deinit);
 
 	LUA_APRS_IS_UnregisterGlobalFunction(discord_rpc_poll);
+	LUA_APRS_IS_UnregisterGlobalFunction(discord_rpc_update_presence);
 
-	LUA_APRS_IS_UnregisterGlobalFunction(discord_rpc_presence_clear);
-	LUA_APRS_IS_UnregisterGlobalFunction(discord_rpc_presence_update);
-
-	LUA_APRS_IS_UnregisterGlobalFunction(discord_rpc_presence_buttons_get_count);
-	LUA_APRS_IS_UnregisterGlobalFunction(discord_rpc_presence_buttons_find);
+	LUA_APRS_IS_UnregisterGlobalFunction(discord_rpc_presence_init);
+	LUA_APRS_IS_UnregisterGlobalFunction(discord_rpc_presence_deinit);
+	LUA_APRS_IS_UnregisterGlobalFunction(discord_rpc_presence_get_header);
+	LUA_APRS_IS_UnregisterGlobalFunction(discord_rpc_presence_set_header);
+	LUA_APRS_IS_UnregisterGlobalFunction(discord_rpc_presence_get_details);
+	LUA_APRS_IS_UnregisterGlobalFunction(discord_rpc_presence_set_details);
+	LUA_APRS_IS_UnregisterGlobalFunction(discord_rpc_presence_get_time_start);
+	LUA_APRS_IS_UnregisterGlobalFunction(discord_rpc_presence_set_time_start);
+	LUA_APRS_IS_UnregisterGlobalFunction(discord_rpc_presence_get_time_end);
+	LUA_APRS_IS_UnregisterGlobalFunction(discord_rpc_presence_set_time_end);
+	LUA_APRS_IS_UnregisterGlobalFunction(discord_rpc_presence_get_button);
+	LUA_APRS_IS_UnregisterGlobalFunction(discord_rpc_presence_get_button_count);
+	LUA_APRS_IS_UnregisterGlobalFunction(discord_rpc_presence_get_image_large_key);
+	LUA_APRS_IS_UnregisterGlobalFunction(discord_rpc_presence_set_image_large_key);
+	LUA_APRS_IS_UnregisterGlobalFunction(discord_rpc_presence_get_image_large_text);
+	LUA_APRS_IS_UnregisterGlobalFunction(discord_rpc_presence_set_image_large_text);
+	LUA_APRS_IS_UnregisterGlobalFunction(discord_rpc_presence_get_image_small_key);
+	LUA_APRS_IS_UnregisterGlobalFunction(discord_rpc_presence_set_image_small_key);
+	LUA_APRS_IS_UnregisterGlobalFunction(discord_rpc_presence_get_image_small_text);
+	LUA_APRS_IS_UnregisterGlobalFunction(discord_rpc_presence_set_image_small_text);
 	LUA_APRS_IS_UnregisterGlobalFunction(discord_rpc_presence_buttons_add);
 	LUA_APRS_IS_UnregisterGlobalFunction(discord_rpc_presence_buttons_remove);
 	LUA_APRS_IS_UnregisterGlobalFunction(discord_rpc_presence_buttons_clear);
+
+	LUA_APRS_IS_UnregisterGlobalFunction(discord_rpc_presence_button_get_url);
+	LUA_APRS_IS_UnregisterGlobalFunction(discord_rpc_presence_button_set_url);
+	LUA_APRS_IS_UnregisterGlobalFunction(discord_rpc_presence_button_get_label);
+	LUA_APRS_IS_UnregisterGlobalFunction(discord_rpc_presence_button_set_label);
 });

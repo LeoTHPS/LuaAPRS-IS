@@ -13,58 +13,124 @@ DiscordRPC =
 		return discord_rpc_poll(discord_rpc);
 	end,
 
+	-- @return false on connection closed
+	UpdatePresence = function(discord_rpc, presence)
+		return discord_rpc_update_presence(discord_rpc, presence);
+	end,
+
 	Presence =
 	{
-		Clear = function(discord_rpc)
-			return discord_rpc_presence_clear(discord_rpc);
+		Init = function()
+			return discord_rpc_presence_init();
 		end,
 
-		Update = function(discord_rpc, header, details, timestamp_start, timestamp_end, large_image_key, large_image_text, small_image_key, small_image_text)
-			if large_image_key then
-				large_image_key = tostring(large_image_key);
-			end
-
-			if large_image_text then
-				large_image_text = tostring(large_image_text);
-			end
-
-			if small_image_key then
-				small_image_key = tostring(small_image_key);
-			end
-
-			if small_image_text then
-				small_image_text = tostring(small_image_text);
-			end
-
-			return discord_rpc_presence_update(discord_rpc, tostring(header), tostring(details), tonumber(timestamp_start), tonumber(timestamp_end), large_image_key, large_image_text, small_image_key, small_image_text);
+		Deinit = function(presence)
+			discord_rpc_presence_deinit(presence);
 		end,
 
-		Refresh = function(discord_rpc)
-			return discord_rpc_presence_refresh(discord_rpc);
+		GetHeader = function(presence)
+			return discord_rpc_presence_get_header(presence);
 		end,
+
+		SetHeader = function(presence, value)
+			discord_rpc_presence_set_header(presence, tostring(value));
+		end,
+
+		GetDetails = function(presence)
+			return discord_rpc_presence_get_details(presence);
+		end,
+
+		SetDetails = function(presence, value)
+			discord_rpc_presence_set_details(presence, tostring(value));
+		end,
+
+		GetTimeStart = function(presence)
+			return discord_rpc_presence_get_time_start(presence);
+		end,
+
+		SetTimeStart = function(presence, value)
+			discord_rpc_presence_set_time_start(presence, tonumber(value));
+		end,
+
+		GetTimeEnd = function(presence)
+			return discord_rpc_presence_get_time_end(presence);
+		end,
+
+		SetTimeEnd = function(presence, value)
+			discord_rpc_presence_set_time_end(presence, tonumber(value));
+		end,
+
+		GetButton = function(presence, index)
+			return discord_rpc_presence_get_button(presence, tonumber(index));
+		end,
+
+		GetButtonCount = function(presence)
+			return discord_rpc_presence_get_button_count(presence);
+		end,
+
+		GetImageLargeKey = function(presence)
+			return discord_rpc_presence_get_image_large_key(presence);
+		end,
+
+		SetImageLargeKey = function(presence, value)
+			discord_rpc_presence_set_image_large_key(presence, tostring(value));
+		end,
+
+		GetImageLargeText = function(presence)
+			return discord_rpc_presence_get_image_large_text(presence);
+		end,
+
+		SetImageLargeText = function(presence, value)
+			discord_rpc_presence_set_image_large_text(presence, tostring(value));
+		end,
+
+		GetImageSmallKey = function(presence)
+			return discord_rpc_presence_get_image_small_key(presence);
+		end,
+
+		SetImageSmallKey = function(presence, value)
+			discord_rpc_presence_set_image_small_key(presence, tostring(value));
+		end,
+
+		GetImageSmallText = function(presence)
+			return discord_rpc_presence_get_image_small_text(presence);
+		end,
+
+		SetImageSmallText = function(presence, value)
+			discord_rpc_presence_set_image_small_text(presence, tostring(value));
+		end,
+
+		Button =
+		{
+			GetURL = function(button)
+				return discord_rpc_presence_button_get_url(button);
+			end,
+
+			SetURL = function(button, value)
+				discord_rpc_presence_button_set_url(button, tostring(value));
+			end,
+
+			GetLabel = function(button)
+				return discord_rpc_presence_button_get_label(button);
+			end,
+
+			SetLabel = function(button, value)
+				discord_rpc_presence_button_set_label(button, tostring(value));
+			end
+		},
 
 		Buttons =
 		{
-			GetCount = function(discord_rpc)
-				return discord_rpc_presence_buttons_get_count(discord_rpc);
+			Add = function(presence, label, url)
+				return discord_rpc_presence_buttons_add(presence, tostring(label), tostring(url));
 			end,
 
-			-- @return success, button_index
-			Find = function(discord_rpc, label)
-				return discord_rpc_presence_buttons_find(discord_rpc, tostring(label));
+			Remove = function(presence, button)
+				discord_rpc_presence_buttons_remove(presence, button);
 			end,
 
-			-- @return success, button_index
-			Add = function(discord_rpc, label, url, auto_refresh)
-				return discord_rpc_presence_buttons_add(discord_rpc, tostring(label), tostring(url), auto_refresh and true or false);
-			end,
-
-			Remove = function(discord_rpc, button_index, auto_refresh)
-				return discord_rpc_presence_buttons_remove(discord_rpc, tonumber(button_index), auto_refresh and true or false);
-			end,
-
-			Clear = function(discord_rpc, auto_refresh)
-				return discord_rpc_presence_buttons_clear(discord_rpc, auto_refresh and true or false);
+			Clear = function(presence)
+				discord_rpc_presence_buttons_clear(presence);
 			end
 		}
 	}
