@@ -125,8 +125,8 @@ bool                                                   discord_rpc_presence_upda
 
 	discord_rpc->rich_presence.Header          = header ? header : STRING_EMPTY;
 	discord_rpc->rich_presence.Details         = details ? details : STRING_EMPTY;
-	discord_rpc->rich_presence.TimeStart       = timestamp_start;
-	discord_rpc->rich_presence.TimeEnd         = timestamp_end;
+	discord_rpc->rich_presence.TimeStart       = AL::Timestamp::FromSeconds(timestamp_start);
+	discord_rpc->rich_presence.TimeEnd         = AL::Timestamp::FromSeconds(timestamp_end);
 	discord_rpc->rich_presence.ImageLarge.Key  = large_image_key ? large_image_key : STRING_EMPTY;
 	discord_rpc->rich_presence.ImageLarge.Text = large_image_text ? large_image_text : STRING_EMPTY;
 	discord_rpc->rich_presence.ImageSmall.Key  = small_image_key ? small_image_key : STRING_EMPTY;
