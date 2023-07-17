@@ -26,7 +26,7 @@ function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 
 		if string.lower(Console.ReadLine('Outside', 'Are you sure you want to unleash the spam? Y/N')) ~= 'y' then
 			Console.WriteLine('Outside', 'Good choice.');
-			return;
+			return true;
 		end
 
 		aprs_is_filter = 't/p';
