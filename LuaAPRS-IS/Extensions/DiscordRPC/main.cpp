@@ -6,13 +6,40 @@
 
 #include <AL/OS/Console.hpp>
 
-typedef DiscordRPC::IPCConnection discord_rpc;
-typedef DiscordRPC::RichPresence  discord_rpc_presence;
-typedef DiscordRPC::Button        discord_rpc_presence_button;
+typedef DiscordRPC::IPCConnection                                                                                                                          discord_rpc;
+typedef DiscordRPC::RichPresence                                                                                                                           discord_rpc_presence;
+typedef DiscordRPC::Button                                                                                                                                 discord_rpc_presence_button;
 
-discord_rpc*                 discord_rpc_init(const char* application_id)
+typedef DiscordRPC::IPCConnectionOnReadyEventHandler                                                                                                       discord_rpc_on_ready_event_handler;
+typedef DiscordRPC::IPCConnectionOnErrorEventHandler                                                                                                       discord_rpc_on_error_event_handler;
+typedef DiscordRPC::IPCConnectionOnConnectEventHandler                                                                                                     discord_rpc_on_connect_event_handler;
+typedef DiscordRPC::IPCConnectionOnDisconnectEventHandler                                                                                                  discord_rpc_on_disconnect_event_handler;
+
+typedef AL::Lua54::LuaCallback<void(const char* user_id, const char* user_name, const char* user_username, AL::uint16 user_flags, AL::uint8 user_premium)> lua_discord_rpc_on_ready_event_handler;
+typedef AL::Lua54::LuaCallback<void(AL::uint16 error_code, const char* error_message)>                                                                     lua_discord_rpc_on_error_event_handler;
+typedef AL::Lua54::LuaCallback<void()>                                                                                                                     lua_discord_rpc_on_connect_event_handler;
+typedef AL::Lua54::LuaCallback<void(AL::uint16 error_code, const char* error_message)>                                                                     lua_discord_rpc_on_disconnect_event_handler;
+
+discord_rpc*                 discord_rpc_init(const char* application_id, lua_discord_rpc_on_ready_event_handler on_ready, lua_discord_rpc_on_error_event_handler on_error, lua_discord_rpc_on_connect_event_handler on_connect, lua_discord_rpc_on_disconnect_event_handler on_disconnect)
 {
 	auto discord_rpc = new ::discord_rpc(application_id);
+
+	discord_rpc->OnReady.Register([discord_rpc, on_ready = AL::Move(on_ready)](const DiscordRPC::User& user)
+	{
+		return on_ready(user.ID.GetCString(), user.Name.GetCString(), user.Username.GetCString(), static_cast<AL::uint16>(user.Flags.Value), AL::uint8(user.Premium));
+	});
+	discord_rpc->OnError.Register([discord_rpc, on_error = AL::Move(on_error)](DiscordRPC::ErrorCodes errorCode, const AL::String& errorMessage)
+	{
+		return on_error(static_cast<AL::uint16>(errorCode), errorMessage.GetCString());
+	});
+	discord_rpc->OnConnect.Register([discord_rpc, on_connect = AL::Move(on_connect)]()
+	{
+		return on_connect();
+	});
+	discord_rpc->OnDisconnect.Register([discord_rpc, on_disconnect = AL::Move(on_disconnect)](DiscordRPC::CloseErrorCodes errorCode, const AL::String& errorMessage)
+	{
+		return on_disconnect(static_cast<AL::uint16>(errorCode), errorMessage.GetCString());
+	});
 
 	try
 	{

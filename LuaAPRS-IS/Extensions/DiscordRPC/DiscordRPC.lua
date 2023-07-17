@@ -1,7 +1,11 @@
 DiscordRPC =
 {
-	Init = function(application_id)
-		return discord_rpc_init(tostring(application_id));
+	-- @param on_ready      function(user_id, user_name, user_flags, user_premium)
+	-- @param on_error      function(error_code, error_message)
+	-- @param on_connect    function()
+	-- @param on_disconnect function(error_code, error_message)
+	Init = function(application_id, on_ready, on_error, on_connect, on_disconnect)
+		return discord_rpc_init(tostring(application_id), on_ready, on_error, on_connect, on_disconnect);
 	end,
 
 	Deinit = function(discord_rpc)
