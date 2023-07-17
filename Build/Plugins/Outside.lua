@@ -443,6 +443,7 @@ end
 Outside.Private.Discord                  = {};
 Outside.Private.Discord.Presence         = {};
 Outside.Private.Discord.Presence.Buttons = {};
+Outside.Private.Discord.EventHandlers    = {};
 
 function Outside.Private.Discord.InitResources()
 	Outside.Private.Discord.Presence.Handle = DiscordRPC.Presence.Init();
@@ -456,7 +457,13 @@ function Outside.Private.Discord.DeinitResources()
 end
 
 function Outside.Private.Discord.Init(application_id)
-	Outside.Private.Discord.Handle = DiscordRPC.Init(application_id);
+	Outside.Private.Discord.Handle = DiscordRPC.Init(
+		application_id,
+		Outside.Private.Discord.EventHandlers.OnReady,
+		Outside.Private.Discord.EventHandlers.OnError,
+		Outside.Private.Discord.EventHandlers.OnConnect,
+		Outside.Private.Discord.EventHandlers.OnDisconnect
+	);
 
 	if not Outside.Private.Discord.Handle then
 		return false;
@@ -494,6 +501,22 @@ end
 
 function Outside.Private.Discord.Presence.RemoveButton(button)
 	DiscordRPC.Presence.Buttons.Remove(Outside.Private.Discord.Presence.Handle, button);
+end
+
+function Outside.Private.Discord.EventHandlers.OnReady(user_id, user_name, user_username, user_flags, user_premium)
+	Console.WriteLine('Discord', string.format('Ready [User.ID: %s, User.Name: %s, User.Username: %s, User.Flags: 0x%04X, User.Premium: %u]', user_id, user_name, user_username, user_flags, user_premium));
+end
+
+function Outside.Private.Discord.EventHandlers.OnError(error_code, error_message)
+	Console.WriteLine('Discord', string.format('Error [Code: %u, Message: %s]', error_code, error_message));
+end
+
+function Outside.Private.Discord.EventHandlers.OnConnect()
+	Console.WriteLine('Discord', string.format('Connected'));
+end
+
+function Outside.Private.Discord.EventHandlers.OnDisconnect(error_code, error_message)
+	Console.WriteLine('Discord', string.format('Disconnected [Code: %u, Message: %s]', error_code, error_message));
 end
 
 Outside.Events                       = {};
