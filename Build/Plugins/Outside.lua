@@ -32,6 +32,8 @@ function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 		aprs_is_filter = 't/p';
 	end
 
+	Outside.Private.Discord.InitResources();
+
 	if not Gateway.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, aprs_is_port, aprs_is_filter, database_path) then
 		Console.WriteLine('Outside', 'Error initializing Gateway');
 		return false;
@@ -46,7 +48,7 @@ function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 
 	Outside.Events.RegisterEvent(Gateway.Events.OnUpdate, function(delta_ms)
 		Outside.Private.UpdateIdleState();
-		Outside.Private.Discord.RichPresence.Poll();
+		Outside.Private.Discord.Poll();
 	end);
 
 	Outside.Events.RegisterEvent(Gateway.Events.OnReceivePosition, function(station, path, igate, latitude, longitude, altitude, comment)
@@ -70,7 +72,7 @@ function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 	Outside.Events.RegisterEvent(Outside.Private.Events.UpdateDiscord, function()
 		if Outside.Private.IsIdle() then
 			local discord_header                  = nil;
-			local discord_message                 = nil;
+			local discord_details                 = nil;
 			local discord_icon_big                = ((tonumber(os.date('%H')) >= 6) and (tonumber(os.date('%H')) < 21)) and 'outside_day' or 'outside_night';
 			local discord_icon_big_text           = nil;
 			local discord_icon_small              = nil;
@@ -80,7 +82,7 @@ function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 			local station_timestamp, station_name, station_callsign, station_path, station_igate, station_latitude, station_longitude, station_altitude, station_comment = Outside.GetMostRecentStationPosition();
 
 			if station_timestamp == 0 then
-				discord_header, discord_message = Outside.GetDefaultIdleMessage();
+				discord_header, discord_details = Outside.GetDefaultIdleMessage();
 			else
 				local station_distance                                    = Outside.Private.GetDistanceBetweenPoints(latitude, longitude, altitude, station_latitude, station_longitude, station_altitude);
 				local idle_message_header, idle_message, distance_divider = Outside.Private.GetIdleMessageByPosition(station_latitude, station_longitude);
@@ -96,13 +98,13 @@ function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 				local path_icon_station, path_icon, path_icon_comment = Outside.Private.GetStationPathIcon(station_path);
 
 				discord_header          = idle_message_header;
-				discord_message         = string.format(idle_message, station_distance / distance_divider);
+				discord_details         = string.format(idle_message, station_distance / distance_divider);
 				discord_icon_big_text   = station_comment;
 				discord_icon_small      = path_icon or 'aprs_icon';
 				discord_icon_small_text = path_icon_comment and string.format(path_icon_comment, station_igate) or string.format('%s via %s', station_path, station_igate);
 			end
 
-			if Outside.Private.Discord.RichPresence.Update(discord_header, discord_message, Outside.Private.IdleTimestamp, 0, discord_icon_big, discord_icon_big_text, discord_icon_small, discord_icon_small_text) then
+			if Outside.Private.Discord.Presence.Update(discord_header, discord_details, Outside.Private.IdleTimestamp, discord_icon_big, discord_icon_big_text, discord_icon_small, discord_icon_small_text) then
 				if Outside.Private.DiscordAutoUpdate then
 					Outside.Events.ScheduleEvent(Outside.Private.Events.UpdateDiscord, 5);
 				end
@@ -120,6 +122,8 @@ function Outside.Run(interval_ms)
 	end
 
 	Outside.Private.LeaveIdleState();
+
+	Outside.Private.Discord.DeinitResources();
 
 	return true;
 end
@@ -337,6 +341,14 @@ function Outside.AddStationPathIcon(station, icon, comment)
 	};
 end
 
+function Outside.AddButton(label, url)
+	return Outside.Private.Discord.Presence.AddButton(label, url);
+end
+
+function Outside.RemoveButton(button)
+	return Outside.Private.Discord.Presence.RemoveButton(button);
+end
+
 function Outside.Private.IsIdle()
 	return Outside.Private.IdleTimestamp ~= nil;
 end
@@ -354,7 +366,7 @@ end
 function Outside.Private.EnterIdleState()
 	Outside.Private.IdleTimestamp = System.GetTimestamp();
 
-	if not Outside.Private.Discord.RichPresence.Init(Outside.Private.Config.Discord.ApplicationID) then
+	if not Outside.Private.Discord.Init(Outside.Private.Config.Discord.ApplicationID) then
 		Outside.Private.IdleTimestamp = nil;
 		return false;
 	end
@@ -373,7 +385,7 @@ function Outside.Private.LeaveIdleState()
 
 		Outside.Events.ExecuteEvent(Outside.Events.OnLeaveIdleState);
 
-		Outside.Private.Discord.RichPresence.Deinit();
+		Outside.Private.Discord.Deinit();
 		Outside.Private.IdleTimestamp = nil;
 	end
 end
@@ -428,35 +440,60 @@ function Outside.Private.GetDistanceBetweenPoints(latitude1, longitude1, altitud
 	return ((distance * 6371) * 3280.84) + distance_z;
 end
 
-Outside.Private.Discord                        = {};
-Outside.Private.Discord.RichPresence           = {};
-Outside.Private.Discord.RichPresence.Callbacks = {};
+Outside.Private.Discord                  = {};
+Outside.Private.Discord.Presence         = {};
+Outside.Private.Discord.Presence.Buttons = {};
 
-function Outside.Private.Discord.RichPresence.Init(application_id)
+function Outside.Private.Discord.InitResources()
+	Outside.Private.Discord.Presence.Handle = DiscordRPC.Presence.Init();
+end
+
+function Outside.Private.Discord.DeinitResources()
+	if Outside.Private.Discord.Presence.Handle then
+		DiscordRPC.Presence.Deinit(Outside.Private.Discord.Presence.Handle);
+		Outside.Private.Discord.Presence.Handle = nil;
+	end
+end
+
+function Outside.Private.Discord.Init(application_id)
 	Outside.Private.Discord.Handle = DiscordRPC.Init(application_id);
 
 	if not Outside.Private.Discord.Handle then
 		return false;
 	end
 
-	if not DiscordRPC.Presence.Buttons.Add(Outside.Private.Discord.Handle, 'What is this "Outside"?', 'https://github.com/LeoTHPS/LuaAPRS-IS/blob/master/Build/demo_outside.lua') then
-		DiscordRPC.Deinit(Outside.Private.Discord.Handle);
-		return false;
-	end
-
 	return true;
 end
 
-function Outside.Private.Discord.RichPresence.Deinit()
-	DiscordRPC.Deinit(Outside.Private.Discord.Handle);
+function Outside.Private.Discord.Deinit()
+	if Outside.Private.Discord.Handle then
+		DiscordRPC.Deinit(Outside.Private.Discord.Handle);
+		Outside.Private.Discord.Handle = nil;
+	end
 end
 
-function Outside.Private.Discord.RichPresence.Poll()
+function Outside.Private.Discord.Poll()
 	return DiscordRPC.Poll(Outside.Private.Discord.Handle);
 end
 
-function Outside.Private.Discord.RichPresence.Update(header, details, timestamp_start, timestamp_stop, large_image_key, large_image_text, small_image_key, small_image_text)
-	return DiscordRPC.Presence.Update(Outside.Private.Discord.Handle, header, details, timestamp_start, timestamp_stop, large_image_key, large_image_text, small_image_key, small_image_text);
+function Outside.Private.Discord.Presence.Update(header, details, timestamp, large_image_key, large_image_text, small_image_key, small_image_text)
+	DiscordRPC.Presence.SetHeader(Outside.Private.Discord.Presence.Handle, header);
+	DiscordRPC.Presence.SetDetails(Outside.Private.Discord.Presence.Handle, details);
+	DiscordRPC.Presence.SetTimeStart(Outside.Private.Discord.Presence.Handle, timestamp);
+	DiscordRPC.Presence.SetImageLargeKey(Outside.Private.Discord.Presence.Handle, large_image_key);
+	DiscordRPC.Presence.SetImageLargeText(Outside.Private.Discord.Presence.Handle, large_image_text);
+	DiscordRPC.Presence.SetImageSmallKey(Outside.Private.Discord.Presence.Handle, small_image_key);
+	DiscordRPC.Presence.SetImageSmallText(Outside.Private.Discord.Presence.Handle, small_image_text);
+
+	return DiscordRPC.UpdatePresence(Outside.Private.Discord.Handle, Outside.Private.Discord.Presence.Handle);
+end
+
+function Outside.Private.Discord.Presence.AddButton(label, url)
+	return DiscordRPC.Presence.Buttons.Add(Outside.Private.Discord.Presence.Handle, label, url);
+end
+
+function Outside.Private.Discord.Presence.RemoveButton(button)
+	DiscordRPC.Presence.Buttons.Remove(Outside.Private.Discord.Presence.Handle, button);
 end
 
 Outside.Events                       = {};
