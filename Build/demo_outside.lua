@@ -11,6 +11,8 @@ if Outside.Init('N0CALL', 00000, 'WIDE1-1', 'noam.aprs2.net', 14580, 10 * 60, 48
 
 	Outside.SetDefaultIdleMessage('Lost', 'Location unknown', 1);
 
+	Outside.AddButton('What is this "Outside"?', 'https://github.com/LeoTHPS/LuaAPRS-IS/blob/master/Build/demo_outside.lua');
+
 	Outside.AddIdleMessageByDistance(0,      'Wandering aimlessly', '%.2f ft away from keyboard',    1);
 	Outside.AddIdleMessageByDistance(1320,   'Exploring aimlessly', '%.2f miles away from keyboard', 5280);
 	Outside.AddIdleMessageByDistance(528000, 'Exploring',           '%.2f miles away from keyboard', 5280);
