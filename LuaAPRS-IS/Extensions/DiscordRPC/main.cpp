@@ -165,7 +165,7 @@ AL::Collections::Tuple<bool, discord_rpc_button_index> discord_rpc_presence_butt
 	return value;
 }
 // @return success, button_index
-AL::Collections::Tuple<bool, discord_rpc_button_index> discord_rpc_presence_buttons_add(discord_rpc* discord_rpc, const char* label, const char* url)
+AL::Collections::Tuple<bool, discord_rpc_button_index> discord_rpc_presence_buttons_add(discord_rpc* discord_rpc, const char* label, const char* url, bool auto_refresh)
 {
 	AL::Collections::Tuple<bool, discord_rpc_button_index> value(false, 0);
 
@@ -178,13 +178,13 @@ AL::Collections::Tuple<bool, discord_rpc_button_index> discord_rpc_presence_butt
 			}
 		);
 
-		value.Set<0>(discord_rpc_presence_refresh(discord_rpc));
+		value.Set<0>(!auto_refresh || discord_rpc_presence_refresh(discord_rpc));
 		value.Set<1>(static_cast<discord_rpc_button_index>(discord_rpc->rich_presence.Buttons.GetSize()));
 	}
 
 	return value;
 }
-bool                                                   discord_rpc_presence_buttons_remove(discord_rpc* discord_rpc, discord_rpc_button_index button_index)
+bool                                                   discord_rpc_presence_buttons_remove(discord_rpc* discord_rpc, discord_rpc_button_index button_index, bool auto_refresh)
 {
 	if (discord_rpc == nullptr)
 		return false;
@@ -204,16 +204,16 @@ bool                                                   discord_rpc_presence_butt
 		}
 	}
 
-	return discord_rpc_presence_refresh(discord_rpc);
+	return !auto_refresh || discord_rpc_presence_refresh(discord_rpc);
 }
-bool                                                   discord_rpc_presence_buttons_clear(discord_rpc* discord_rpc)
+bool                                                   discord_rpc_presence_buttons_clear(discord_rpc* discord_rpc, bool auto_refresh)
 {
 	if (discord_rpc == nullptr)
 		return false;
 
 	discord_rpc->rich_presence.Buttons.Clear();
 
-	return discord_rpc_presence_refresh(discord_rpc);
+	return !auto_refresh || discord_rpc_presence_refresh(discord_rpc);
 }
 
 LUA_APRS_IS_EXTENSION_INIT([](Extension& extension)

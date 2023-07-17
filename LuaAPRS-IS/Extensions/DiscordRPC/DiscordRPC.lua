@@ -55,16 +55,16 @@ DiscordRPC =
 			end,
 
 			-- @return success, button_index
-			Add = function(discord_rpc, label, url)
-				return discord_rpc_presence_buttons_add(discord_rpc, tostring(label), tostring(url));
+			Add = function(discord_rpc, label, url, auto_refresh)
+				return discord_rpc_presence_buttons_add(discord_rpc, tostring(label), tostring(url), auto_refresh and true or false);
 			end,
 
-			Remove = function(discord_rpc, button_index)
-				return discord_rpc_presence_buttons_remove(discord_rpc, tonumber(button_index));
+			Remove = function(discord_rpc, button_index, auto_refresh)
+				return discord_rpc_presence_buttons_remove(discord_rpc, tonumber(button_index), auto_refresh and true or false);
 			end,
 
-			Clear = function(discord_rpc)
-				return discord_rpc_presence_buttons_clear(discord_rpc);
+			Clear = function(discord_rpc, auto_refresh)
+				return discord_rpc_presence_buttons_clear(discord_rpc, auto_refresh and true or false);
 			end
 		}
 	}
