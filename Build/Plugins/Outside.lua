@@ -6,6 +6,8 @@ Outside          = {};
 Outside.Private  = {};
 Outside.INFINITE = Gateway.INFINITE;
 
+Script.ExitCodes.UserRequested = 1000 + Script.ExitCodes.UserDefined;
+
 function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, aprs_is_port, min_idle_time, position_ttl, database_path, station_list)
 	Outside.Private.Config                       = {};
 	Outside.Private.Config.MinIdleTime           = min_idle_time;
@@ -26,7 +28,8 @@ function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 
 		if string.lower(Console.ReadLine('Outside', 'Are you sure you want to unleash the spam? Y/N')) ~= 'y' then
 			Console.WriteLine('Outside', 'Good choice.');
-			return true;
+			Script.SetExitCode(Script.ExitCodes.UserRequested);
+			return false;
 		end
 
 		aprs_is_filter = 't/p';
@@ -47,8 +50,9 @@ function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 	end
 
 	Outside.Events.RegisterEvent(Gateway.Events.OnUpdate, function(delta_ms)
-		Outside.Private.UpdateIdleState();
-		Outside.Private.Discord.Poll();
+		if Outside.Private.Discord.Poll() then
+			Outside.Private.UpdateIdleState();
+		end
 	end);
 
 	Outside.Events.RegisterEvent(Gateway.Events.OnReceivePosition, function(station, path, igate, latitude, longitude, altitude, comment)
