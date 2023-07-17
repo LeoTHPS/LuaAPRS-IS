@@ -1,6 +1,6 @@
 require('Plugins.Gateway');
 
-Script.LoadExtension('Extensions.Discord');
+Script.LoadExtension('Extensions.DiscordRPC');
 
 Outside          = {};
 Outside.Private  = {};
@@ -46,6 +46,7 @@ function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 
 	Outside.Events.RegisterEvent(Gateway.Events.OnUpdate, function(delta_ms)
 		Outside.Private.UpdateIdleState();
+		Outside.Private.Discord.RichPresence.Poll();
 	end);
 
 	Outside.Events.RegisterEvent(Gateway.Events.OnReceivePosition, function(station, path, igate, latitude, longitude, altitude, comment)
@@ -74,8 +75,6 @@ function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 			local discord_icon_big_text           = nil;
 			local discord_icon_small              = nil;
 			local discord_icon_small_text         = nil;
-			local discord_party_size              = 1;
-			local discord_party_size_max          = 0;
 	
 			local latitude, longitude, altitude                                                                                                                          = Outside.GetPosition();
 			local station_timestamp, station_name, station_callsign, station_path, station_igate, station_latitude, station_longitude, station_altitude, station_comment = Outside.GetMostRecentStationPosition();
@@ -103,11 +102,10 @@ function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 				discord_icon_small_text = path_icon_comment and string.format(path_icon_comment, station_igate) or string.format('%s via %s', station_path, station_igate);
 			end
 
-			Outside.Private.Discord.RichPresence.Update(discord_header, discord_message, Outside.Private.IdleTimestamp, 0, discord_icon_big, discord_icon_big_text, discord_icon_small, discord_icon_small_text, discord_party_size, discord_party_size_max);
-			Outside.Private.Discord.RichPresence.Poll();
-
-			if Outside.Private.DiscordAutoUpdate then
-				Outside.Events.ScheduleEvent(Outside.Private.Events.UpdateDiscord, 5);
+			if Outside.Private.Discord.RichPresence.Update(discord_header, discord_message, Outside.Private.IdleTimestamp, 0, discord_icon_big, discord_icon_big_text, discord_icon_small, discord_icon_small_text) then
+				if Outside.Private.DiscordAutoUpdate then
+					Outside.Events.ScheduleEvent(Outside.Private.Events.UpdateDiscord, 5);
+				end
 			end
 		end
 	end);
@@ -435,54 +433,35 @@ Outside.Private.Discord.RichPresence           = {};
 Outside.Private.Discord.RichPresence.Callbacks = {};
 
 function Outside.Private.Discord.RichPresence.Init(application_id)
-	return Discord.RichPresence.Init(application_id, Outside.Private.Discord.RichPresence.Callbacks.Ready, Outside.Private.Discord.RichPresence.Callbacks.Disconnect, Outside.Private.Discord.RichPresence.Callbacks.Error, Outside.Private.Discord.RichPresence.Callbacks.JoinGame, Outside.Private.Discord.RichPresence.Callbacks.JoinRequest, Outside.Private.Discord.RichPresence.Callbacks.SpectateGame, nil);
+	Outside.Private.Discord.Handle = DiscordRPC.Init(application_id);
+
+	if not Outside.Private.Discord.Handle then
+		return false;
+	end
+
+	if not DiscordRPC.Presence.Buttons.Add(Outside.Private.Discord.Handle, 'What is this "Outside"?', 'https://github.com/LeoTHPS/LuaAPRS-IS/blob/master/Build/demo_outside.lua') then
+		DiscordRPC.Deinit(Outside.Private.Discord.Handle);
+		return false;
+	end
+
+	return true;
 end
 
 function Outside.Private.Discord.RichPresence.Deinit()
-	Discord.RichPresence.ClearPresence();
-	Discord.RichPresence.UpdateConnection();
-	Discord.RichPresence.RunCallbacks();
-
-	Discord.RichPresence.Deinit();
+	DiscordRPC.Deinit(Outside.Private.Discord.Handle);
 end
 
 function Outside.Private.Discord.RichPresence.Poll()
-	Discord.RichPresence.UpdateConnection();
-	Discord.RichPresence.RunCallbacks();
+	return DiscordRPC.Poll(Outside.Private.Discord.Handle);
 end
 
-function Outside.Private.Discord.RichPresence.Update(header, message, timestamp_start, timestamp_stop, large_image_key, large_image_text, small_image_key, small_image_text, party_size, party_size_max)
-	Discord.RichPresence.UpdatePresence(tostring(message or ''), tostring(header or ''), tonumber(timestamp_start), tonumber(timestamp_stop or 0), tostring(large_image_key or ''), tostring(large_image_text or ''), tostring(small_image_key or ''), tostring(small_image_text or ''), '00', tonumber(party_size or 1), tonumber(party_size_max or 0), '11', '22', '33', 1);
-end
-
-function Outside.Private.Discord.RichPresence.Callbacks.Ready(user_id, username, discriminator, avatar)
-	Outside.Events.ExecuteEvent(Outside.Events.OnDiscordConnected, user_id, username, discriminator);
-end
-
-function Outside.Private.Discord.RichPresence.Callbacks.Disconnect(error_code, message)
-	Outside.Events.ExecuteEvent(Outside.Events.OnDiscordDisconnected, error_code, message);
-end
-
-function Outside.Private.Discord.RichPresence.Callbacks.Error(error_code, message)
-	Outside.Events.ExecuteEvent(Outside.Events.OnDiscordError, error_code, message);
-end
-
-function Outside.Private.Discord.RichPresence.Callbacks.JoinGame(join_secret)
-end
-
-function Outside.Private.Discord.RichPresence.Callbacks.JoinRequest(user_id, username, discriminator, avatar)
-	Discord.RichPresence.Respond(user_id, Discord.RichPresence.Replies.No);
-end
-
-function Outside.Private.Discord.RichPresence.Callbacks.SpectateGame(spectate_secret)
+function Outside.Private.Discord.RichPresence.Update(header, details, timestamp_start, timestamp_stop, large_image_key, large_image_text, small_image_key, small_image_text)
+	return DiscordRPC.Presence.Update(Outside.Private.Discord.Handle, header, details, timestamp_start, timestamp_stop, large_image_key, large_image_text, small_image_key, small_image_text);
 end
 
 Outside.Events                       = {};
 Outside.Events.OnEnterIdleState      = {}; -- function()
 Outside.Events.OnLeaveIdleState      = {}; -- function()
-Outside.Events.OnDiscordError        = {}; -- function(error_code, message)
-Outside.Events.OnDiscordConnected    = {}; -- function(user_id, username, discriminator)
-Outside.Events.OnDiscordDisconnected = {}; -- function(error_code, message)
 Outside.Events.OnPositionChanged     = {}; -- function(name, station, path, igate, latitude, longitude, altitude, comment)
 Outside.Private.Events               = {};
 Outside.Private.Events.UpdateDiscord = {}; -- function()
