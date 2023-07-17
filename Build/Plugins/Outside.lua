@@ -50,9 +50,7 @@ function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 	end
 
 	Outside.Events.RegisterEvent(Gateway.Events.OnUpdate, function(delta_ms)
-		if Outside.Private.Discord.Poll() then
-			Outside.Private.UpdateIdleState();
-		end
+		Outside.Private.UpdateIdleState();
 	end);
 
 	Outside.Events.RegisterEvent(Gateway.Events.OnReceivePosition, function(station, path, igate, latitude, longitude, altitude, comment)
@@ -359,7 +357,9 @@ function Outside.Private.IsIdle()
 end
 
 function Outside.Private.UpdateIdleState()
-	if not Outside.Private.IsIdle() then
+	if Outside.Private.IsIdle() then
+		Outside.Private.Discord.Poll();
+	elseif not Outside.Private.IsIdle() then
 		if System.GetIdleTime() >= Outside.Private.Config.MinIdleTime then
 			Outside.Private.EnterIdleState();
 		end
