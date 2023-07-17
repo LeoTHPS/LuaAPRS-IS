@@ -341,6 +341,7 @@ function Outside.AddStationPathIcon(station, icon, comment)
 	};
 end
 
+-- @return button
 function Outside.AddButton(label, url)
 	return Outside.Private.Discord.Presence.AddButton(label, url);
 end
@@ -495,6 +496,7 @@ function Outside.Private.Discord.Presence.Update(header, details, timestamp, lar
 	return DiscordRPC.UpdatePresence(Outside.Private.Discord.Handle, Outside.Private.Discord.Presence.Handle);
 end
 
+-- @return button
 function Outside.Private.Discord.Presence.AddButton(label, url)
 	return DiscordRPC.Presence.Buttons.Add(Outside.Private.Discord.Presence.Handle, label, url);
 end
