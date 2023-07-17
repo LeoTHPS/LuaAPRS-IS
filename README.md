@@ -13,31 +13,31 @@
 
 #### Extensions
 
-|                                                 | [json](//github.com/nlohmann/json) | [SQLite3](//github.com/sqlite/sqlite) | [OpenSSL](//github.com/openssl/openssl) | [Discord RPC](//github.com/discord/discord-rpc) |
-| ----------------------------------------------- | :--------------------------------: | :-----------------------------------: | :-------------------------------------: | :-------------------------------------------:   |
-| [ByteBuffer](LuaAPRS-IS/Extensions/ByteBuffer/) |                                    |                                       |                                         |                                                 |
-| [Console](LuaAPRS-IS/Extensions/Console/)       |                                    |                                       |                                         |                                                 |
-| [Discord](LuaAPRS-IS/Extensions/Discord/)       |                                    |                                       |                                         | *                                               |
-| [Loop](LuaAPRS-IS/Extensions/Loop/)             |                                    |                                       |                                         |                                                 |
-| [Mutex](LuaAPRS-IS/Extensions/Mutex/)           |                                    |                                       |                                         |                                                 |
-| [N2YO](LuaAPRS-IS/Extensions/N2YO/)             | *                                  |                                       | *                                       |                                                 |
-| [Process](LuaAPRS-IS/Extensions/Process/)       |                                    |                                       |                                         |                                                 |
-| [Script](LuaAPRS-IS/Extensions/)                |                                    |                                       |                                         |                                                 |
-| [Socket](LuaAPRS-IS/Extensions/Socket/)         |                                    |                                       |                                         |                                                 |
-| [SQLite3](LuaAPRS-IS/Extensions/SQLite3)        |                                    | *                                     |                                         |                                                 |
-| [System](LuaAPRS-IS/Extensions/System/)         |                                    |                                       |                                         |                                                 |
-| [Thread](LuaAPRS-IS/Extensions/Thread/)         |                                    |                                       |                                         |                                                 |
-| [Types](LuaAPRS-IS/Extensions/Types/)           |                                    |                                       |                                         |                                                 |
-| [WebRequest](LuaAPRS-IS/Extensions/WebRequest/) |                                    |                                       | *                                       |                                                 |
+|                                                 | [SQLite3](//github.com/sqlite/sqlite) | [OpenSSL](//github.com/openssl/openssl) | [DiscordRPC](//github.com/leothps/DiscordRPC) | [nlohmann::json](//github.com/nlohmann/json) |
+| ----------------------------------------------- | :-----------------------------------: | :-------------------------------------: | :-------------------------------------------: | :------------------------------------------: |
+| [ByteBuffer](LuaAPRS-IS/Extensions/ByteBuffer/) |                                       |                                         |                                               |                                              |
+| [Console](LuaAPRS-IS/Extensions/Console/)       |                                       |                                         |                                               | *                                            |
+| [DiscordRPC](LuaAPRS-IS/Extensions/DiscordRPC/) |                                       |                                         | *                                             |                                              |
+| [Loop](LuaAPRS-IS/Extensions/Loop/)             |                                       |                                         |                                               |                                              |
+| [Mutex](LuaAPRS-IS/Extensions/Mutex/)           |                                       |                                         |                                               |                                              |
+| [N2YO](LuaAPRS-IS/Extensions/N2YO/)             |                                       | *                                       |                                               | *                                            |
+| [Process](LuaAPRS-IS/Extensions/Process/)       |                                       |                                         |                                               |                                              |
+| [Script](LuaAPRS-IS/Extensions/)                |                                       |                                         |                                               |                                              |
+| [Socket](LuaAPRS-IS/Extensions/Socket/)         |                                       |                                         |                                               |                                              |
+| [SQLite3](LuaAPRS-IS/Extensions/SQLite3)        | *                                     |                                         |                                               |                                              |
+| [System](LuaAPRS-IS/Extensions/System/)         |                                       |                                         |                                               |                                              |
+| [Thread](LuaAPRS-IS/Extensions/Thread/)         |                                       |                                         |                                               |                                              |
+| [Types](LuaAPRS-IS/Extensions/Types/)           |                                       |                                         |                                               |                                              |
+| [WebRequest](LuaAPRS-IS/Extensions/WebRequest/) |                                       | *                                       |                                               |                                              |
 
 #### Plugins
 
-|                                              | ByteBuffer | Console | Discord | Loop | Mutex | N2YO | Process | Script | Socket | SQLite3 | System | Thread | Types | WebRequest |
-| -------------------------------------------- | :--------: | :-----: | :-----: | :--: | :---: | :--: | :-----: | :----: | :----: | :-----: | :----: | :----: | :---: | :--------: |
-| [Gateway](Build/Plugins/Gateway.lua)         |            | *       |         | *    | *     |      |         | *      |        | *       | *      |        |       |            |
-| [Outside](Build/Plugins/Outside.lua)         |            | *       | *       | *    | *     |      |         | *      |        | *       | *      |        |       |            |
-| [FireWatch](Build/Plugins/FireWatch.lua)     | *          | *       |         | *    | *     |      |         | *      | *      | *       | *      |        |       |            |
-| [SkipMonitor](Build/Plugins/SkipMonitor.lua) |            | *       |         | *    | *     |      |         | *      |        | *       | *      |        |       |            |
+|                                              | ByteBuffer | Console | DiscordRPC | Loop | Mutex | N2YO | Process | Script | Socket | SQLite3 | System | Thread | Types | WebRequest |
+| -------------------------------------------- | :--------: | :-----: | :--------: | :--: | :---: | :--: | :-----: | :----: | :----: | :-----: | :----: | :----: | :---: | :--------: |
+| [Gateway](Build/Plugins/Gateway.lua)         |            | *       |            | *    | *     |      |         | *      |        | *       | *      |        |       |            |
+| [Outside](Build/Plugins/Outside.lua)         |            | *       | *          | *    | *     |      |         | *      |        | *       | *      |        |       |            |
+| [FireWatch](Build/Plugins/FireWatch.lua)     | *          | *       |            | *    | *     |      |         | *      | *      | *       | *      |        |       |            |
+| [SkipMonitor](Build/Plugins/SkipMonitor.lua) |            | *       |            | *    | *     |      |         | *      |        | *       | *      |        |       |            |
 
 <hr />
 
