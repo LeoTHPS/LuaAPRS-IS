@@ -13,10 +13,6 @@ DiscordRPC =
 		return discord_rpc_poll(discord_rpc);
 	end,
 
-	Respond = function(discord_rpc, user_id, reply)
-		return discord_rpc_respond(discord_rpc, tostring(user_id), tonumber(reply));
-	end,
-
 	Presence =
 	{
 		Clear = function(discord_rpc)
