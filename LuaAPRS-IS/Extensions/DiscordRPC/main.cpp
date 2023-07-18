@@ -146,7 +146,12 @@ const char*                  discord_rpc_presence_get_header(discord_rpc_presenc
 void                         discord_rpc_presence_set_header(discord_rpc_presence* presence, const char* value)
 {
 	if (presence != nullptr)
-		presence->Header = value;
+	{
+		if (value == nullptr)
+			presence->Header.Clear();
+		else
+			presence->Header = value;
+	}
 }
 const char*                  discord_rpc_presence_get_details(discord_rpc_presence* presence)
 {
@@ -155,7 +160,12 @@ const char*                  discord_rpc_presence_get_details(discord_rpc_presen
 void                         discord_rpc_presence_set_details(discord_rpc_presence* presence, const char* value)
 {
 	if (presence != nullptr)
-		presence->Details = value;
+	{
+		if (value == nullptr)
+			presence->Details.Clear();
+		else
+			presence->Details = value;
+	}
 }
 AL::uint32                   discord_rpc_presence_get_time_start(discord_rpc_presence* presence)
 {
@@ -202,7 +212,12 @@ const char*                  discord_rpc_presence_get_image_large_key(discord_rp
 void                         discord_rpc_presence_set_image_large_key(discord_rpc_presence* presence, const char* value)
 {
 	if (presence != nullptr)
-		presence->ImageLarge.Key = value;
+	{
+		if (value == nullptr)
+			presence->ImageLarge.Key.Clear();
+		else
+			presence->ImageLarge.Key = value;
+	}
 }
 const char*                  discord_rpc_presence_get_image_large_text(discord_rpc_presence* presence)
 {
@@ -211,7 +226,12 @@ const char*                  discord_rpc_presence_get_image_large_text(discord_r
 void                         discord_rpc_presence_set_image_large_text(discord_rpc_presence* presence, const char* value)
 {
 	if (presence != nullptr)
-		presence->ImageLarge.Text = value;
+	{
+		if (value == nullptr)
+			presence->ImageLarge.Text.Clear();
+		else
+			presence->ImageLarge.Text = value;
+	}
 }
 const char*                  discord_rpc_presence_get_image_small_key(discord_rpc_presence* presence)
 {
@@ -220,7 +240,12 @@ const char*                  discord_rpc_presence_get_image_small_key(discord_rp
 void                         discord_rpc_presence_set_image_small_key(discord_rpc_presence* presence, const char* value)
 {
 	if (presence != nullptr)
-		presence->ImageSmall.Key = value;
+	{
+		if (value == nullptr)
+			presence->ImageSmall.Key.Clear();
+		else
+			presence->ImageSmall.Key = value;
+	}
 }
 const char*                  discord_rpc_presence_get_image_small_text(discord_rpc_presence* presence)
 {
@@ -229,7 +254,12 @@ const char*                  discord_rpc_presence_get_image_small_text(discord_r
 void                         discord_rpc_presence_set_image_small_text(discord_rpc_presence* presence, const char* value)
 {
 	if (presence != nullptr)
-		presence->ImageSmall.Text = value;
+	{
+		if (value == nullptr)
+			presence->ImageSmall.Text.Clear();
+		else
+			presence->ImageSmall.Text = value;
+	}
 }
 discord_rpc_presence_button* discord_rpc_presence_buttons_add(discord_rpc_presence* presence, const char* label, const char* url)
 {
@@ -237,8 +267,8 @@ discord_rpc_presence_button* discord_rpc_presence_buttons_add(discord_rpc_presen
 	{
 		presence->Buttons.PushBack(
 			{
-				.URL   = url,
-				.Label = label
+				.URL   = url ? url : "",
+				.Label = label ? label : ""
 			}
 		);
 
@@ -277,7 +307,12 @@ const char*                  discord_rpc_presence_button_get_url(discord_rpc_pre
 void                         discord_rpc_presence_button_set_url(discord_rpc_presence_button* button, const char* value)
 {
 	if (button != nullptr)
-		button->URL = value;
+	{
+		if (value == nullptr)
+			button->URL.Clear();
+		else
+			button->URL = value;
+	}
 }
 const char*                  discord_rpc_presence_button_get_label(discord_rpc_presence_button* button)
 {
@@ -286,7 +321,12 @@ const char*                  discord_rpc_presence_button_get_label(discord_rpc_p
 void                         discord_rpc_presence_button_set_label(discord_rpc_presence_button* button, const char* value)
 {
 	if (button != nullptr)
-		button->Label = value;
+	{
+		if (value == nullptr)
+			button->Label.Clear();
+		else
+			button->Label = value;
+	}
 }
 
 LUA_APRS_IS_EXTENSION_INIT([](Extension& extension)

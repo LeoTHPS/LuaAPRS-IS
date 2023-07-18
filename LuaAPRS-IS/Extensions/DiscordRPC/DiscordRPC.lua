@@ -37,7 +37,7 @@ DiscordRPC =
 		end,
 
 		SetHeader = function(presence, value)
-			discord_rpc_presence_set_header(presence, tostring(value));
+			discord_rpc_presence_set_header(presence, value and tostring(value) or nil);
 		end,
 
 		GetDetails = function(presence)
@@ -45,7 +45,7 @@ DiscordRPC =
 		end,
 
 		SetDetails = function(presence, value)
-			discord_rpc_presence_set_details(presence, tostring(value));
+			discord_rpc_presence_set_details(presence, value and tostring(value) or nil);
 		end,
 
 		GetTimeStart = function(presence)
@@ -53,7 +53,7 @@ DiscordRPC =
 		end,
 
 		SetTimeStart = function(presence, value)
-			discord_rpc_presence_set_time_start(presence, tonumber(value));
+			discord_rpc_presence_set_time_start(presence, value and tonumber(value) or 0);
 		end,
 
 		GetTimeEnd = function(presence)
@@ -61,11 +61,11 @@ DiscordRPC =
 		end,
 
 		SetTimeEnd = function(presence, value)
-			discord_rpc_presence_set_time_end(presence, tonumber(value));
+			discord_rpc_presence_set_time_end(presence, value and tonumber(value) or 0);
 		end,
 
 		GetButton = function(presence, index)
-			return discord_rpc_presence_get_button(presence, tonumber(index));
+			return discord_rpc_presence_get_button(presence, index and tonumber(index) or 0);
 		end,
 
 		GetButtonCount = function(presence)
@@ -77,7 +77,7 @@ DiscordRPC =
 		end,
 
 		SetImageLargeKey = function(presence, value)
-			discord_rpc_presence_set_image_large_key(presence, tostring(value));
+			discord_rpc_presence_set_image_large_key(presence, value and tostring(value) or nil);
 		end,
 
 		GetImageLargeText = function(presence)
@@ -85,7 +85,7 @@ DiscordRPC =
 		end,
 
 		SetImageLargeText = function(presence, value)
-			discord_rpc_presence_set_image_large_text(presence, tostring(value));
+			discord_rpc_presence_set_image_large_text(presence, value and tostring(value) or nil);
 		end,
 
 		GetImageSmallKey = function(presence)
@@ -93,7 +93,7 @@ DiscordRPC =
 		end,
 
 		SetImageSmallKey = function(presence, value)
-			discord_rpc_presence_set_image_small_key(presence, tostring(value));
+			discord_rpc_presence_set_image_small_key(presence, value and tostring(value) or nil);
 		end,
 
 		GetImageSmallText = function(presence)
@@ -101,7 +101,7 @@ DiscordRPC =
 		end,
 
 		SetImageSmallText = function(presence, value)
-			discord_rpc_presence_set_image_small_text(presence, tostring(value));
+			discord_rpc_presence_set_image_small_text(presence, value and tostring(value) or nil);
 		end,
 
 		Button =
@@ -111,7 +111,7 @@ DiscordRPC =
 			end,
 
 			SetURL = function(button, value)
-				discord_rpc_presence_button_set_url(button, tostring(value));
+				discord_rpc_presence_button_set_url(button, value and tostring(value) or nil);
 			end,
 
 			GetLabel = function(button)
@@ -119,14 +119,14 @@ DiscordRPC =
 			end,
 
 			SetLabel = function(button, value)
-				discord_rpc_presence_button_set_label(button, tostring(value));
+				discord_rpc_presence_button_set_label(button, value and tostring(value) or nil);
 			end
 		},
 
 		Buttons =
 		{
 			Add = function(presence, label, url)
-				return discord_rpc_presence_buttons_add(presence, tostring(label), tostring(url));
+				return discord_rpc_presence_buttons_add(presence, label and tostring(label) or nil, url and tostring(url) or nil);
 			end,
 
 			Remove = function(presence, button)
