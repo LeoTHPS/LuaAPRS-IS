@@ -22,12 +22,8 @@ function FireWatch.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host
 	end);
 
 	Gateway.Events.RegisterEvent(Gateway.Events.OnReceivePosition, function(station, path, igate, latitude, longitude, altitude, comment)
-		local fire_exists, fire_id, fire_name, distance_to_nearest_hotspot, distance_to_nearest_hotspot_elevation = FireWatch.Private.FindFire(latitude, longitude, altitude);
 		local station_exists, station_latitude, station_longitude, station_altitude = FireWatch.Private.GetStationPosition(station);
-
-		if station_exists and (latitude == station_latitude) and (longitude == station_longitude) and (altitude == station_altitude) then
-			return;
-		end
+		local fire_exists, fire_id, fire_name, distance_to_nearest_hotspot, distance_to_nearest_hotspot_elevation = FireWatch.Private.FindFire(latitude, longitude, altitude);
 
 		if fire_exists and station_exists then
 			FireWatch.Private.SetStationPosition(station, latitude, longitude, altitude);
@@ -157,6 +153,7 @@ function FireWatch.Run(interval_ms)
 	return true;
 end
 
+-- @return false on connection closed
 function FireWatch.SendMessage(station, message)
 	return Gateway.APRS.IS.SendMessage(station, message);
 end
