@@ -3,6 +3,8 @@ require('Plugins.Gateway');
 Script.LoadExtension('Extensions.Socket');
 Script.LoadExtension('Extensions.ByteBuffer');
 
+-- TODO: alert stations when fire is added (probably should add position expiration)
+
 FireWatch = {};
 
 function FireWatch.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, aprs_is_port, database_path)
@@ -22,6 +24,10 @@ function FireWatch.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host
 	Gateway.Events.RegisterEvent(Gateway.Events.OnReceivePosition, function(station, path, igate, latitude, longitude, altitude, comment)
 		local fire_exists, fire_id, fire_name, distance_to_nearest_hotspot, distance_to_nearest_hotspot_elevation = FireWatch.Private.FindFire(latitude, longitude, altitude);
 		local station_exists, station_latitude, station_longitude, station_altitude = FireWatch.Private.GetStationPosition(station);
+
+		if station_exists and (latitude == station_latitude) and (longitude == station_longitude) and (altitude == station_altitude) then
+			return;
+		end
 
 		if fire_exists and station_exists then
 			FireWatch.Private.SetStationPosition(station, latitude, longitude, altitude);
@@ -149,6 +155,10 @@ function FireWatch.Run(interval_ms)
 	end
 
 	return true;
+end
+
+function FireWatch.SendMessage(station, message)
+	return Gateway.APRS.IS.SendMessage(station, message);
 end
 
 FireWatch.Private = {};
