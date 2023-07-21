@@ -20,17 +20,17 @@ function FireWatch.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host
 	end);
 
 	Gateway.Events.RegisterEvent(Gateway.Events.OnReceivePosition, function(station, path, igate, latitude, longitude, altitude, comment)
-		local fire_exists, fire_id, fire_name, distance_to_nearest_hotspot = FireWatch.Private.FindFire(latitude, longitude);
+		local fire_exists, fire_id, fire_name, distance_to_nearest_hotspot, distance_to_nearest_hotspot_elevation = FireWatch.Private.FindFire(latitude, longitude, altitude);
 		local station_exists, station_latitude, station_longitude, station_altitude = FireWatch.Private.GetStationPosition(station);
 
 		if fire_exists and station_exists then
 			FireWatch.Private.SetStationPosition(station, latitude, longitude, altitude);
-			FireWatch.Events.ExecuteEvent(FireWatch.Events.OnStationPositionChangedInFireZone, fire_id, fire_name, station, latitude, longitude, altitude, comment, distance_to_nearest_hotspot);
+			FireWatch.Events.ExecuteEvent(FireWatch.Events.OnStationPositionChangedInFireZone, fire_id, fire_name, station, latitude, longitude, altitude, comment, distance_to_nearest_hotspot, distance_to_nearest_hotspot_elevation);
 		elseif fire_exists and not station_exists then
 			FireWatch.Private.SetStationPosition(station, latitude, longitude, altitude);
-			FireWatch.Events.ExecuteEvent(FireWatch.Events.OnStationEnteredFireZone, fire_id, fire_name, station, latitude, longitude, altitude, comment, distance_to_nearest_hotspot);
+			FireWatch.Events.ExecuteEvent(FireWatch.Events.OnStationEnteredFireZone, fire_id, fire_name, station, latitude, longitude, altitude, comment, distance_to_nearest_hotspot, distance_to_nearest_hotspot_elevation);
 		elseif not fire_exists and station_exists then
-			local prev_fire_exists, prev_fire_guid, prev_fire_name, prev_distance_to_nearest_hotspot = FireWatch.Private.FindFire(station_latitude, station_longitude);
+			local prev_fire_exists, prev_fire_guid, prev_fire_name, prev_distance_to_nearest_hotspot, distance_to_nearest_hotspot_elevation = FireWatch.Private.FindFire(station_latitude, station_longitude, altitude);
 
 			if prev_fire_exists then
 				FireWatch.Private.RemoveStationPosition(station);
@@ -48,7 +48,7 @@ function FireWatch.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host
 	end);
 
 	FireWatch.Events.RegisterEvent(FireWatch.Events.OnSourceConnectionFailed, function(source_host, source_port)
-		Console.WriteLine('FireWatch.Sources', string.format('Error connecting to %s:%u', source_host, source_port));
+		-- Console.WriteLine('FireWatch.Sources', string.format('Error connecting to %s:%u', source_host, source_port));
 	end);
 
 	FireWatch.Events.RegisterEvent(FireWatch.Private.Events.PollSources, function()
@@ -153,23 +153,27 @@ end
 
 FireWatch.Private = {};
 
--- @return exists, id, name, distance_to_nearest_hotspot
-function FireWatch.Private.FindFire(latitude, longitude)
+-- @return exists, id, name, distance_to_nearest_hotspot, distance_to_nearest_hotspot_elevation
+function FireWatch.Private.FindFire(latitude, longitude, altitude)
 	if FireWatch.Private.Fires then
 		for fire_id, fire in pairs(FireWatch.Private.Fires) do
 			for fire_hotspot_index, fire_hotspot_position in ipairs(fire.HotSpots) do
 				local distance_to_fire_hotspot_position = FireWatch.Private.GetDistanceBetweenPoints(fire_hotspot_position.Latitude, fire_hotspot_position.Longitude, latitude, longitude);
 
-				if distance_to_fire_hotspot_position <= fire_hotspot_position[3] then
-					return true, fire_id, fire.Name, distance_to_fire_hotspot_position;
+				if distance_to_fire_hotspot_position <= fire_hotspot_position.Radius then
+					local distance_to_nearest_hotspot_elevation = (altitude >= fire_hotspot_position.Altitude) and (altitude - fire_hotspot_position.Altitude) or 0;
+
+					return true, fire_id, tostring(fire.Name), distance_to_fire_hotspot_position, distance_to_nearest_hotspot_elevation;
 				end
 			end
 		end
 	end
 
-	return false, 0, nil, 0;
+	return false, 0, nil, 0, 0;
 end
 
+-- @param id uint64
+-- @param name string
 -- @param hotspot_positions { { .Radius, .Altitude, .Latitude, .Longitude }, ... }
 function FireWatch.Private.AddFire(id, name, hotspot_positions)
 	if not FireWatch.Private.Fires then
@@ -186,6 +190,7 @@ function FireWatch.Private.AddFire(id, name, hotspot_positions)
 	FireWatch.Events.ExecuteEvent(FireWatch.Events.OnFireStarted, id, name, hotspot_positions);
 end
 
+-- @param id uint64
 function FireWatch.Private.RemoveFire(id)
 	if FireWatch.Private.Fires then
 		local fire = FireWatch.Private.Fires[id];
@@ -198,6 +203,8 @@ function FireWatch.Private.RemoveFire(id)
 	end
 end
 
+-- @param id uint64
+-- @param name string
 -- @param hotspot_positions { { .Radius, .Altitude, .Latitude, .Longitude }, ... }
 function FireWatch.Private.UpdateFire(id, name, hotspot_positions)
 	if FireWatch.Private.Fires then
@@ -423,9 +430,9 @@ FireWatch.Events.OnFireExtinguished                 = {}; -- function(fire_id, f
 FireWatch.Events.OnSourceConnected                  = {}; -- function(source_host, source_port)
 FireWatch.Events.OnSourceDisconnected               = {}; -- function(source_host, source_port)
 FireWatch.Events.OnSourceConnectionFailed           = {}; -- function(source_host, source_port)
-FireWatch.Events.OnStationEnteredFireZone           = {}; -- function(fire_id, fire_name, station, station_latitude, station_longitude, station_altitude, station_comment, station_distance_to_nearest_fire_hotspot)
+FireWatch.Events.OnStationEnteredFireZone           = {}; -- function(fire_id, fire_name, station, station_latitude, station_longitude, station_altitude, station_comment, station_distance_to_nearest_fire_hotspot, station_distance_to_nearest_fire_hotspot_elevation)
 FireWatch.Events.OnStationLeftFireZone              = {}; -- function(fire_id, fire_name, station, station_latitude, station_longitude, station_altitude, station_comment)
-FireWatch.Events.OnStationPositionChangedInFireZone = {}; -- function(fire_id, fire_name, station, station_latitude, station_longitude, station_altitude, station_comment, station_distance_to_nearest_fire_hotspot)
+FireWatch.Events.OnStationPositionChangedInFireZone = {}; -- function(fire_id, fire_name, station, station_latitude, station_longitude, station_altitude, station_comment, station_distance_to_nearest_fire_hotspot, station_distance_to_nearest_fire_hotspot_elevation)
 FireWatch.Private.Events                            = {};
 FireWatch.Private.Events.PollSources                = {}; -- function()
 FireWatch.Private.Events.OnReceivePacket            = {}; -- function(opcode, byte_buffer, byte_buffer_size)
