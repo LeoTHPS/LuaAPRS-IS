@@ -165,6 +165,31 @@ end
 
 FireWatch.Private = {};
 
+-- @return fire_exists, fire_name, fire_distance
+function FireWatch.Private.FindFire(id, latitude, longitude)
+	if FireWatch.Private.Fires then
+		if FireWatch.Private.Fires[id] then
+			local fire_distance = nil;
+
+			for fire_hotspot_index, fire_hotspot_position in ipairs(FireWatch.Private.Fires[id].HotSpots) do
+				local distance_to_fire_hotspot_position = FireWatch.Private.GetDistanceBetweenPoints(fire_hotspot_position.Latitude, fire_hotspot_position.Longitude, latitude, longitude);
+
+				if distance_to_fire_hotspot_position <= fire_hotspot_position.Radius then
+					if not fire_distance or (distance_to_fire_hotspot_position < fire_distance) then
+						fire_distance = distance_to_fire_hotspot_position;
+					end
+				end
+			end
+
+			if fire_distance ~= nil then
+				return true, tostring(FireWatch.Private.Fires[id].Name), fire_distance;
+			end
+		end
+	end
+
+	return false, nil, 0;
+end
+
 -- @return fire_count, fires[fire_id] = { .Name, .Distance }
 function FireWatch.Private.FindFires(latitude, longitude)
 	local fires      = {};
@@ -172,18 +197,16 @@ function FireWatch.Private.FindFires(latitude, longitude)
 
 	if FireWatch.Private.Fires then
 		for fire_id, fire in pairs(FireWatch.Private.Fires) do
-			for fire_hotspot_index, fire_hotspot_position in ipairs(fire.HotSpots) do
-				local distance_to_fire_hotspot_position = FireWatch.Private.GetDistanceBetweenPoints(fire_hotspot_position.Latitude, fire_hotspot_position.Longitude, latitude, longitude);
+			local fire_exists, fire_name, fire_distance = FireWatch.Private.FindFire(fire_id, latitude, longitude);
 
-				if distance_to_fire_hotspot_position <= fire_hotspot_position.Radius then
-					fires[fire_id] =
-					{
-						Name     = tostring(fire.Name),
-						Distance = distance_to_fire_hotspot_position
-					};
+			if fire_exists then
+				fires[fire_id] =
+				{
+					Name     = fire_name,
+					Distance = fire_distance
+				};
 
-					fire_count = fire_count + 1;
-				end
+				fire_count = fire_count + 1;
 			end
 		end
 	end
