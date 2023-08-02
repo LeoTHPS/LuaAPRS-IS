@@ -72,6 +72,6 @@ APRS.IS =
 	end,
 
 	SetBlocking = function(aprs_is, value)
-		return aprs_is_set_blocking(aprs_is, tonumber(value));
+		return aprs_is_set_blocking(aprs_is, value and true or false);
 	end
 };
