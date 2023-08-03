@@ -270,7 +270,7 @@ function Gateway.Private.APRS.IS.Connect(host, port, callsign, passcode, path, f
 		return false;
 	end
 
-	Console.WriteLine('Gateway.APRS.IS', 'Connected to ' .. host .. ':' .. port .. ' as ' .. callsign);
+	Console.WriteLine('Gateway.APRS.IS', string.format('Connected to %s:%u as %s', host, port, callsign));
 
 	Gateway.Events.ExecuteEvent(Gateway.Events.OnConnected, host, port, callsign);
 
