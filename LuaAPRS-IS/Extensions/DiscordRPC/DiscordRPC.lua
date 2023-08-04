@@ -1,5 +1,26 @@
 DiscordRPC =
 {
+	UserFlags =
+	{
+		None            = DISCORD_RPC_USER_FLAG_NONE,
+		Employee        = DISCORD_RPC_USER_FLAG_EMPLOYEE,
+		Partner         = DISCORD_RPC_USER_FLAG_PARTNER,
+		HypeSquad       = DISCORD_RPC_USER_FLAG_HYPE_SQUAD,
+		BugHunter       = DISCORD_RPC_USER_FLAG_BUG_HUNTER,
+		HouseBravery    = DISCORD_RPC_USER_FLAG_HOUSE_BRAVERY,
+		HouseBrilliance = DISCORD_RPC_USER_FLAG_HOUSE_BRILLIANCE,
+		HouseBalance    = DISCORD_RPC_USER_FLAG_HOUSE_BALANCE,
+		EarlySupporter  = DISCORD_RPC_USER_FLAG_EARLY_SUPPORTER,
+		TeamUser        = DISCORD_RPC_USER_FLAG_TEAM_USER
+	},
+
+	UserPremiumTypes =
+	{
+		None         = DISCORD_RPC_USER_PREMIUM_TYPE_NONE,
+		Nitro        = DISCORD_RPC_USER_PREMIUM_TYPE_NITRO,
+		NitroClassic = DISCORD_RPC_USER_PREMIUM_TYPE_NITRO_CLASSIC
+	},
+
 	-- @param on_ready      function(user_id, user_name, user_flags, user_premium)
 	-- @param on_error      function(error_code, error_message)
 	-- @param on_connect    function()

@@ -495,6 +495,47 @@ function Outside.Private.Discord.Presence.RemoveButton(button)
 end
 
 function Outside.Private.Discord.EventHandlers.OnReady(user_id, user_name, user_username, user_flags, user_premium)
+	local function user_flags_tostring(value)
+		local function string_append(string, delimiter, value)
+			if string.len(string) == 0 then
+				return tostring(value);
+			end
+	
+			return string .. delimiter .. value;
+		end
+
+		local string = '';
+
+		if (user_flags & DiscordRPC.UserFlags.Employee) == DiscordRPC.UserFlags.Employee               then string = string_append(string, ' | ', 'Employee');        end
+		if (user_flags & DiscordRPC.UserFlags.Partner) == DiscordRPC.UserFlags.Partner                 then string = string_append(string, ' | ', 'Partner');         end
+		if (user_flags & DiscordRPC.UserFlags.HypeSquad) == DiscordRPC.UserFlags.HypeSquad             then string = string_append(string, ' | ', 'HypeSquad');       end
+		if (user_flags & DiscordRPC.UserFlags.BugHunter) == DiscordRPC.UserFlags.BugHunter             then string = string_append(string, ' | ', 'BugHunter');       end
+		if (user_flags & DiscordRPC.UserFlags.HouseBravery) == DiscordRPC.UserFlags.HouseBravery       then string = string_append(string, ' | ', 'HouseBravery');    end
+		if (user_flags & DiscordRPC.UserFlags.HouseBrilliance) == DiscordRPC.UserFlags.HouseBrilliance then string = string_append(string, ' | ', 'HouseBrilliance'); end
+		if (user_flags & DiscordRPC.UserFlags.HouseBalance) == DiscordRPC.UserFlags.HouseBalance       then string = string_append(string, ' | ', 'HouseBalance');    end
+		if (user_flags & DiscordRPC.UserFlags.EarlySupporter) == DiscordRPC.UserFlags.EarlySupporter   then string = string_append(string, ' | ', 'EarlySupporter');  end
+		if (user_flags & DiscordRPC.UserFlags.TeamUser) == DiscordRPC.UserFlags.TeamUser               then string = string_append(string, ' | ', 'TeamUser');        end
+
+		if string == '' then
+			string = 'None';
+		end
+
+		return string;
+	end
+
+	local function user_premium_tostring(value)
+		local string = 'None';
+
+		if user_premium == DiscordRPC.UserPremiumTypes.Nitro then
+			string = 'Nitro';
+		elseif user_premium == DiscordRPC.UserPremiumTypes.NitroClassic then
+			string = 'Nitro Classic';
+		end
+
+		return string;
+	end
+
+	-- Console.WriteLine('Discord', string.format('Ready [ID: %s, Name: %s, Username: %s, Flags: %s, Premium: %s]', user_id, user_name, user_username, user_flags_tostring(user_flags), user_premium_tostring(user_premium)));
 end
 
 function Outside.Private.Discord.EventHandlers.OnError(error_code, error_message)
@@ -505,7 +546,9 @@ function Outside.Private.Discord.EventHandlers.OnConnect()
 end
 
 function Outside.Private.Discord.EventHandlers.OnDisconnect(error_code, error_message)
-	Console.WriteLine('Discord', string.format('Disconnected %u - %s', error_code, error_message));
+	if error_code ~= 0 then
+		Console.WriteLine('Discord', string.format('Disconnected %u - %s', error_code, error_message));
+	end
 end
 
 Outside.Events                       = {};
