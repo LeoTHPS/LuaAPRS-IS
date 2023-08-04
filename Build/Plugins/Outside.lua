@@ -358,13 +358,15 @@ end
 
 function Outside.Private.UpdateIdleState()
 	if Outside.Private.IsIdle() then
-		Outside.Private.Discord.Poll();
+		if System.GetIdleTime() >= Outside.Private.Config.MinIdleTime then
+			Outside.Private.Discord.Poll();
+		else
+			Outside.Private.LeaveIdleState();
+		end
 	elseif not Outside.Private.IsIdle() then
 		if System.GetIdleTime() >= Outside.Private.Config.MinIdleTime then
 			Outside.Private.EnterIdleState();
 		end
-	elseif System.GetIdleTime() < Outside.Private.Config.MinIdleTime then
-		Outside.Private.LeaveIdleState();
 	end
 end
 
