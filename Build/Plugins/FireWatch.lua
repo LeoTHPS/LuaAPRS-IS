@@ -172,7 +172,7 @@ function FireWatch.Private.FindFire(id, latitude, longitude)
 			local fire_distance = nil;
 
 			for fire_hotspot_index, fire_hotspot_position in ipairs(FireWatch.Private.Fires[id].HotSpots) do
-				local distance_to_fire_hotspot_position = FireWatch.Private.GetDistanceBetweenPoints(fire_hotspot_position.Latitude, fire_hotspot_position.Longitude, latitude, longitude);
+				local distance_to_fire_hotspot_position = Gateway.Utility.GetDistanceBetweenPoints(fire_hotspot_position.Latitude, fire_hotspot_position.Longitude, 0, latitude, longitude, 0);
 
 				if distance_to_fire_hotspot_position <= fire_hotspot_position.Radius then
 					if not fire_distance or (distance_to_fire_hotspot_position < fire_distance) then
@@ -297,17 +297,6 @@ function FireWatch.Private.RemoveStationPosition(station)
 	if FireWatch.Private.StationPositions then
 		FireWatch.Private.StationPositions[station] = nil;
 	end
-end
-
-function FireWatch.Private.GetDistanceBetweenPoints(latitude1, longitude1, latitude2, longitude2)
-	local latitude_delta  = math.rad(latitude2 - latitude1);
-	local longitude_delta = math.rad(longitude2 - longitude1);
-	local latitude_1      = math.rad(latitude1);
-	local latitude_2      = math.rad(latitude2);
-	local a               = math.sin(latitude_delta / 2) * math.sin(latitude_delta / 2) + math.sin(longitude_delta / 2) * math.sin(longitude_delta / 2) * math.cos(latitude_1) * math.cos(latitude_2);
-	local distance        = 2 * math.atan(math.sqrt(a), math.sqrt(1 - a));
-
-	return (distance * 6371) * 3280.84;
 end
 
 FireWatch.Sources                                     = {};
