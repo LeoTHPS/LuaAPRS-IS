@@ -276,7 +276,7 @@ LUA_APRS_IS_EXTENSION_DEINIT([](Extension& extension)
 	LUA_APRS_IS_UnregisterGlobalFunction(n2yo_query_result_get_satellite_pass_count);
 	LUA_APRS_IS_UnregisterGlobalFunction(n2yo_query_result_get_transaction_count);
 
-	LUA_APRS_IS_RegisterGlobalFunction(n2yo_satellite_pass_get_time_start);
-	LUA_APRS_IS_RegisterGlobalFunction(n2yo_satellite_pass_get_time_stop);
-	LUA_APRS_IS_RegisterGlobalFunction(n2yo_satellite_pass_get_max_elevation);
+	LUA_APRS_IS_UnregisterGlobalFunction(n2yo_satellite_pass_get_time_start);
+	LUA_APRS_IS_UnregisterGlobalFunction(n2yo_satellite_pass_get_time_stop);
+	LUA_APRS_IS_UnregisterGlobalFunction(n2yo_satellite_pass_get_max_elevation);
 });
