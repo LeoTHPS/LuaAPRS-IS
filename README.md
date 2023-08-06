@@ -33,12 +33,12 @@
 
 #### Plugins
 
-|                                              | ByteBuffer | Console | DiscordRPC | Loop | Mutex | N2YO | Process | Script | Socket | SQLite3 | System | Thread | Types | WebRequest |
-| -------------------------------------------- | :--------: | :-----: | :--------: | :--: | :---: | :--: | :-----: | :----: | :----: | :-----: | :----: | :----: | :---: | :--------: |
-| [Gateway](Build/Plugins/Gateway.lua)         |            | *       |            | *    | *     |      |         | *      |        | *       | *      |        |       |            |
-| [Outside](Build/Plugins/Outside.lua)         |            | *       | *          | *    | *     |      |         | *      |        | *       | *      |        |       |            |
-| [FireWatch](Build/Plugins/FireWatch.lua)     | *          | *       |            | *    | *     |      |         | *      | *      | *       | *      |        |       |            |
-| [SkipMonitor](Build/Plugins/SkipMonitor.lua) |            | *       |            | *    | *     |      |         | *      |        | *       | *      |        |       |            |
+|                                              | ByteBuffer | Console | DiscordRPC | Loop | Mutex | N2YO | Process | SDR++ | Script | Socket | SQLite3 | System | Thread | Types | WebRequest |
+| -------------------------------------------- | :--------: | :-----: | :--------: | :--: | :---: | :--: | :-----: | :---: | :----: | :----: | :-----: | :----: | :----: | :---: | :--------: |
+| [Gateway](Build/Plugins/Gateway.lua)         |            | *       |            | *    | *     |      |         |       | *      |        | *       | *      |        |       |            |
+| [Outside](Build/Plugins/Outside.lua)         |            | *       | *          | *    | *     |      |         |       | *      |        | *       | *      |        |       |            |
+| [FireWatch](Build/Plugins/FireWatch.lua)     | *          | *       |            | *    | *     |      |         |       | *      | *      | *       | *      |        |       |            |
+| [SkipMonitor](Build/Plugins/SkipMonitor.lua) |            | *       |            | *    | *     |      |         |       | *      |        | *       | *      |        |       |            |
 
 <hr />
 
