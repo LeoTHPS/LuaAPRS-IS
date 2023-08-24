@@ -19,7 +19,12 @@ local aprs_is = APRS.IS.Init(config.Callsign, config.Passcode, config.Filter, co
 if not APRS.IS.Connect(aprs_is, config.Host, config.Port) then
 	Script.SetExitCode(Script.ExitCodes.APRS.IS.ConnectionFailed);
 else
-	print('Connected to ' .. config.Host .. ':' .. config.Port .. ' as ' .. config.Callsign);
+	print(string.format(
+		'Connected to %s:%u as %s',
+		config.Host,
+		config.Port,
+		config.Callsign
+	));
 
 	APRS.IS.SetBlocking(aprs_is, true);
 
@@ -34,12 +39,15 @@ else
 			local aprs_packet_content  = APRS.Packet.GetContent(aprs_packet);
 			local aprs_packet_digipath = APRS.Packet.GetDigiPath(aprs_packet);
 
-			print('Received packet from ' .. aprs_packet_sender ..
-																	' [IGate: ' .. aprs_packet_igate ..
-																	', QFlag: ' .. aprs_packet_qflag ..
-																	', ToCall: ' .. aprs_packet_tocall ..
-																	', Content: ' .. aprs_packet_content ..
-																	', DigiPath: ' .. aprs_packet_digipath .. ']');
+			print(string.format(
+				'Received packet from %s [IGate: %s, QFlag: %s, ToCall: %s, DigiPath: %s] %s',
+				aprs_packet_sender,
+				aprs_packet_igate,
+				aprs_packet_qflag,
+				aprs_packet_tocall,
+				aprs_packet_digipath,
+				aprs_packet_content
+			));
 		end
 	end
 end
