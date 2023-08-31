@@ -15,7 +15,6 @@ struct aprs_is
 {
 	APRS::IS::TcpClient client;
 	aprs_packet         packet;
-	AL::String          packet_buffer;
 	AL::String          digipath;
 };
 
@@ -23,7 +22,7 @@ aprs_is*                                   aprs_is_init(const char* callsign, AL
 {
 	auto is = new aprs_is
 	{
-		.client   = APRS::IS::TcpClient(AL::String(callsign), passcode, (filter ? APRS::IS::Filter({ filter }) : APRS::IS::Filter())),
+		.client   = APRS::IS::TcpClient(AL::String(callsign), passcode, AL::String(filter ? filter : "")),
 		.digipath = digipath,
 	};
 
@@ -98,6 +97,7 @@ void                                       aprs_is_disconnect(aprs_is* is)
 		is->client.Disconnect();
 	}
 }
+// @return would_block, packet
 AL::Collections::Tuple<bool, aprs_packet*> aprs_is_read_packet(aprs_is* is)
 {
 	AL::Collections::Tuple<bool, aprs_packet*> result(false, nullptr);
@@ -106,9 +106,13 @@ AL::Collections::Tuple<bool, aprs_packet*> aprs_is_read_packet(aprs_is* is)
 	{
 		try
 		{
-			switch (is->client.ReadPacket(is->packet_buffer, is->packet))
+			switch (is->client.ReadPacket(is->packet))
 			{
+				case 0:
+					break;
+
 				case -1:
+				case -2:
 					result.Set<0>(true);
 					break;
 
@@ -131,10 +135,12 @@ bool                                       aprs_is_write_packet(aprs_is* is, apr
 {
 	try
 	{
-		is->client.WritePacket(
-			is->packet_buffer,
-			*packet
-		);
+		if (!is->client.WritePacket(*packet))
+		{
+			aprs_is_disconnect(is);
+
+			return false;
+		}
 	}
 	catch (const AL::Exception& exception)
 	{
