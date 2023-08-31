@@ -172,7 +172,7 @@ function FireWatch.Private.FindFire(id, latitude, longitude)
 			local fire_distance = nil;
 
 			for fire_hotspot_index, fire_hotspot_position in ipairs(FireWatch.Private.Fires[id].HotSpots) do
-				local distance_to_fire_hotspot_position = Gateway.Utility.GetDistanceBetweenPoints(fire_hotspot_position.Latitude, fire_hotspot_position.Longitude, 0, latitude, longitude, 0);
+				local distance_to_fire_hotspot_position = Gateway.Utility.GetDistanceBetweenPoints(fire_hotspot_position.Latitude, fire_hotspot_position.Longitude, latitude, longitude);
 
 				if distance_to_fire_hotspot_position <= fire_hotspot_position.Radius then
 					if not fire_distance or (distance_to_fire_hotspot_position < fire_distance) then

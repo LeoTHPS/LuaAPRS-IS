@@ -195,5 +195,5 @@ function SkipMonitor.Private.GetStationDistanceToStation(station1, station2)
 		return nil;
 	end
 
-	return Gateway.Utility.GetDistanceBetweenPoints(station1_latitude, station1_longitude, station1_altitude, station2_latitude, station2_longitude, station2_altitude);
+	return Gateway.Utility.GetDistanceBetweenPoints(station1_latitude, station1_longitude, station2_latitude, station2_longitude);
 end

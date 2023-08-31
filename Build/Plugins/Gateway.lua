@@ -648,7 +648,18 @@ end
 
 Gateway.Utility = {};
 
-function Gateway.Utility.GetDistanceBetweenPoints(latitude1, longitude1, altitude1, latitude2, longitude2, altitude2)
+function Gateway.Utility.GetDistanceBetweenPoints(latitude1, longitude1, latitude2, longitude2)
+	local latitude_delta  = math.rad(latitude2 - latitude1);
+	local longitude_delta = math.rad(longitude2 - longitude1);
+	local latitude_1      = math.rad(latitude1);
+	local latitude_2      = math.rad(latitude2);
+	local a               = math.sin(latitude_delta / 2) * math.sin(latitude_delta / 2) + math.sin(longitude_delta / 2) * math.sin(longitude_delta / 2) * math.cos(latitude_1) * math.cos(latitude_2);
+	local distance        = 2 * math.atan(math.sqrt(a), math.sqrt(1 - a));
+
+	return (distance * 6371) * 3280.84;
+end
+
+function Gateway.Utility.GetDistanceBetweenPoints3D(latitude1, longitude1, altitude1, latitude2, longitude2, altitude2)
 	local latitude_delta  = math.rad(latitude2 - latitude1);
 	local longitude_delta = math.rad(longitude2 - longitude1);
 	local latitude_1      = math.rad(latitude1);
@@ -657,11 +668,11 @@ function Gateway.Utility.GetDistanceBetweenPoints(latitude1, longitude1, altitud
 	local distance        = 2 * math.atan(math.sqrt(a), math.sqrt(1 - a));
 	local distance_z      = 0;
 
-	-- if altitude1 >= altitude2 then
-	-- 	distance_z = altitude1 - altitude2;
-	-- else
-	-- 	distance_z = altitude2 - altitude1;
-	-- end
+	if altitude1 >= altitude2 then
+		distance_z = altitude1 - altitude2;
+	else
+		distance_z = altitude2 - altitude1;
+	end
 
 	return ((distance * 6371) * 3280.84) + distance_z;
 end

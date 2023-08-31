@@ -80,20 +80,20 @@ function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 			local discord_icon_big_text           = nil;
 			local discord_icon_small              = nil;
 			local discord_icon_small_text         = nil;
-	
+
 			local latitude, longitude, altitude                                                                                                                          = Outside.GetPosition();
 			local station_timestamp, station_name, station_callsign, station_path, station_igate, station_latitude, station_longitude, station_altitude, station_comment = Outside.GetMostRecentStationPosition();
 
 			if station_timestamp == 0 then
 				discord_header, discord_details = Outside.GetDefaultIdleMessage();
 			else
-				local station_distance                                    = Gateway.Utility.GetDistanceBetweenPoints(latitude, longitude, altitude, station_latitude, station_longitude, station_altitude);
+				local station_distance                                    = Gateway.Utility.GetDistanceBetweenPoints(latitude, longitude, station_latitude, station_longitude);
 				local idle_message_header, idle_message, distance_divider = Outside.Private.GetIdleMessageByPosition(station_latitude, station_longitude);
-	
+
 				if not idle_message_header or not idle_message then
 					idle_message_header, idle_message, distance_divider = Outside.Private.GetIdleMessageByDistance(station_distance);
 				end
-	
+
 				if not idle_message_header or not idle_message then
 					idle_message_header, idle_message, distance_divider = Outside.GetDefaultIdleMessage();
 				end
@@ -249,7 +249,7 @@ function Outside.Private.GetIdleMessageByPosition(latitude, longitude)
 	local nearest_position_distance_is_infinite = false;
 
 	for i, idle_message in ipairs(Outside.Private.IdleMessagesByPosition) do
-		local idle_message_distance = Gateway.Utility.GetDistanceBetweenPoints(latitude, longitude, 0, idle_message.Latitude, idle_message.Longitude, 0);
+		local idle_message_distance = Gateway.Utility.GetDistanceBetweenPoints(latitude, longitude, idle_message.Latitude, idle_message.Longitude);
 
 		if not nearest_position_distance_is_infinite then
 			if idle_message_distance == Outside.INFINITE then
