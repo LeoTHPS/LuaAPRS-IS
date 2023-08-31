@@ -649,14 +649,7 @@ end
 Gateway.Utility = {};
 
 function Gateway.Utility.GetDistanceBetweenPoints(latitude1, longitude1, latitude2, longitude2)
-	local latitude_delta  = math.rad(latitude2 - latitude1);
-	local longitude_delta = math.rad(longitude2 - longitude1);
-	local latitude_1      = math.rad(latitude1);
-	local latitude_2      = math.rad(latitude2);
-	local a               = math.sin(latitude_delta / 2) * math.sin(latitude_delta / 2) + math.sin(longitude_delta / 2) * math.sin(longitude_delta / 2) * math.cos(latitude_1) * math.cos(latitude_2);
-	local distance        = 2 * math.atan(math.sqrt(a), math.sqrt(1 - a));
-
-	return (distance * 6371) * 3280.84;
+	return Gateway.Utility.GetDistanceBetweenPoints3D(latitude1, longitude1, 0, latitude2, longitude2, 0);
 end
 
 function Gateway.Utility.GetDistanceBetweenPoints3D(latitude1, longitude1, altitude1, latitude2, longitude2, altitude2)
