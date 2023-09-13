@@ -107,10 +107,16 @@ function Outside.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 				discord_icon_small_text = path_icon_comment and string.format(path_icon_comment, station_igate) or string.format('%s via %s', station_path, station_igate);
 			end
 
-			if Outside.Private.Discord.Presence.Update(discord_header, discord_details, Outside.Private.IdleTimestamp, discord_icon_big, discord_icon_big_text, discord_icon_small, discord_icon_small_text) then
-				if Outside.Private.DiscordAutoUpdate then
-					Outside.Events.ScheduleEvent(Outside.Private.Events.UpdateDiscord, 5);
+			while not Outside.Private.Discord.Presence.Update(discord_header, discord_details, Outside.Private.IdleTimestamp, discord_icon_big, discord_icon_big_text, discord_icon_small, discord_icon_small_text) do
+				Outside.Private.Discord.Deinit();
+
+				if not Outside.Private.Discord.Init(Outside.Private.Config.Discord.ApplicationID) then
+					break;
 				end
+			end
+
+			if Outside.Private.DiscordAutoUpdate then
+				Outside.Events.ScheduleEvent(Outside.Private.Events.UpdateDiscord, 5);
 			end
 		end
 	end);
@@ -360,15 +366,25 @@ end
 function Outside.Private.UpdateIdleState()
 	if Outside.Private.IsIdle() then
 		if System.GetIdleTime() >= Outside.Private.Config.MinIdleTime then
-			Outside.Private.Discord.Poll();
+			while not Outside.Private.Discord.Poll() do
+				Outside.Private.Discord.Deinit();
+
+				if not Outside.Private.Discord.Init(Outside.Private.Config.Discord.ApplicationID) then
+					return false;
+				end
+			end
 		else
 			Outside.Private.LeaveIdleState();
 		end
 	elseif not Outside.Private.IsIdle() then
 		if System.GetIdleTime() >= Outside.Private.Config.MinIdleTime then
-			Outside.Private.EnterIdleState();
+			if not Outside.Private.EnterIdleState() then
+				return false;
+			end
 		end
 	end
+
+	return true;
 end
 
 function Outside.Private.EnterIdleState()
