@@ -61,7 +61,15 @@ function Gateway.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 							Gateway.Private.APRS.IS.SendMessageAck(packet_sender, packet_message_ack);
 						end
 
-						Gateway.Events.ExecuteEvent(Gateway.Events.OnReceiveMessage, packet_sender, packet_path, packet_igate, packet_message_content);
+						local command_prefix, command_params = string.match(packet_message_content, '^([^ ]+) (.+)$');
+
+						if not command_prefix then
+							command_prefix = string.match(packet_message_content, '^([^ ]+)$');
+						end
+
+						if not command_prefix or not Gateway.Private.Commands.Execute(packet_sender, command_prefix, command_params) then
+							Gateway.Events.ExecuteEvent(Gateway.Events.OnReceiveMessage, packet_sender, packet_path, packet_igate, packet_message_content);
+						end
 					end
 				end
 
@@ -80,18 +88,6 @@ function Gateway.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 
 				Gateway.Events.ExecuteEvent(Gateway.Events.OnReceivePosition, packet_sender, packet_path, packet_igate, packet_position_latitude, packet_position_longitude, packet_position_altitude, packet_position_comment);
 			end
-		end
-	end);
-
-	Gateway.Events.RegisterEvent(Gateway.Events.OnReceiveMessage, function(station, path, igate, content)
-		local prefix, params = string.match(content, '^([^ ]+) (.+)$');
-
-		if not prefix then
-			prefix = string.match(content, '^([^ ]+)$');
-		end
-
-		if prefix then
-			Gateway.Private.Commands.Execute(station, prefix, params);
 		end
 	end);
 
@@ -393,8 +389,12 @@ function Gateway.Private.Commands.Execute(sender, prefix, params)
 			Gateway.Events.ExecuteEvent(Gateway.Events.OnEvent, sender, prefix, command_params);
 
 			command_handler(sender, prefix, command_params);
+
+			return true;
 		end
 	end
+
+	return false;
 end
 
 function Gateway.Private.Commands.Enumerate(callback)
