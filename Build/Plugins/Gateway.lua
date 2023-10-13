@@ -83,6 +83,18 @@ function Gateway.Init(aprs_callsign, aprs_is_passcode, aprs_path, aprs_is_host, 
 		end
 	end);
 
+	Gateway.Events.RegisterEvent(Gateway.Events.OnReceiveMessage, function(station, path, igate, content)
+		local prefix, params = string.match(content, '^([^ ]+) (.+)$');
+
+		if not prefix then
+			prefix = string.match(content, '^([^ ]+)$');
+		end
+
+		if prefix then
+			Gateway.Private.Commands.Execute(station, prefix, params);
+		end
+	end);
+
 	Gateway.Events.RegisterEvent(Gateway.Private.Events.SaveStorage, function()
 		if not Gateway.Private.Storage.Save() then
 			Console.WriteLine('Gateway', 'Error saving storage');
@@ -372,8 +384,10 @@ function Gateway.Private.Commands.Execute(sender, prefix, params)
 		if command_handler then
 			local command_params = {};
 
-			for param in string.gmatch(params, '[^ ]+') do
-				table.insert(command_params, param);
+			if params then
+				for param in string.gmatch(params, '[^ ]+') do
+					table.insert(command_params, param);
+				end
 			end
 
 			Gateway.Events.ExecuteEvent(Gateway.Events.OnEvent, sender, prefix, command_params);
