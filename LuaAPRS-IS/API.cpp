@@ -13,18 +13,25 @@ typedef APRS::Position aprs_position;
 
 struct aprs_is
 {
-	APRS::IS::TcpClient client;
-	aprs_packet         packet;
-	AL::String          digipath;
+	APRS::IS::Client client;
+	aprs_packet      packet;
+	bool             packet_is_set;
+	AL::String       digipath;
 };
 
 aprs_is*                                   aprs_is_init(const char* callsign, AL::uint16 passcode, const char* filter, const char* digipath)
 {
 	auto is = new aprs_is
 	{
-		.client   = APRS::IS::TcpClient(AL::String(callsign), passcode, AL::String(filter ? filter : "")),
+		.client   = APRS::IS::Client(AL::String(callsign), passcode, AL::String(filter ? filter : "")),
 		.digipath = digipath,
 	};
+
+	is->client.OnReceivePacket.Register([is](const APRS::Packet& packet)
+	{
+		is->packet        = packet;
+		is->packet_is_set = true;
+	});
 
 	return is;
 }
@@ -106,26 +113,22 @@ AL::Collections::Tuple<bool, aprs_packet*> aprs_is_read_packet(aprs_is* is)
 	{
 		try
 		{
-			switch (is->client.ReadPacket(is->packet))
-			{
-				case 0:
-					break;
-
-				case -1:
-				case -2:
-					result.Set<0>(true);
-					break;
-
-				default:
-					result.Set<1>(&is->packet);
-					break;
-			}
+			is->client.Update();
 		}
 		catch (const AL::Exception& exception)
 		{
 			AL::OS::Console::WriteException(
 				exception
 			);
+		}
+
+		result.Set<0>(!is->packet_is_set);
+
+		if (is->packet_is_set)
+		{
+			is->packet_is_set = false;
+
+			result.Set<1>(&is->packet);
 		}
 	}
 
@@ -135,7 +138,7 @@ bool                                       aprs_is_write_packet(aprs_is* is, apr
 {
 	try
 	{
-		if (!is->client.WritePacket(*packet))
+		if (!is->client.SendPacket(*packet))
 		{
 			aprs_is_disconnect(is);
 
@@ -174,9 +177,25 @@ bool                                       aprs_is_send_message(aprs_is* is, con
 		.Destination = destination
 	};
 
-	auto packet = message.Encode(tocall, is->client.GetCallsign(), is->digipath);
+	try
+	{
+		if (!is->client.SendMessage(message, tocall, is->digipath))
+		{
+			aprs_is_disconnect(is);
 
-	return aprs_is_write_packet(is, &packet);
+			return false;
+		}
+	}
+	catch (const AL::Exception& exception)
+	{
+		AL::OS::Console::WriteException(
+			exception
+		);
+
+		return false;
+	}
+
+	return true;
 }
 bool                                       aprs_is_send_message_ack(aprs_is* is, const char* tocall, const char* destination, const char* value)
 {
@@ -202,9 +221,25 @@ bool                                       aprs_is_send_position(aprs_is* is, co
 		.SymbolTableKey = *symbol_table_key
 	};
 
-	auto packet = position.Encode(tocall, is->client.GetCallsign(), is->digipath);
+	try
+	{
+		if (!is->client.SendPosition(position, tocall, is->digipath))
+		{
+			aprs_is_disconnect(is);
 
-	return aprs_is_write_packet(is, &packet);
+			return false;
+		}
+	}
+	catch (const AL::Exception& exception)
+	{
+		AL::OS::Console::WriteException(
+			exception
+		);
+
+		return false;
+	}
+
+	return true;
 }
 bool                                       aprs_is_set_blocking(aprs_is* is, bool value)
 {
