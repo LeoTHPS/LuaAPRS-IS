@@ -23,7 +23,7 @@ aprs_is*                                   aprs_is_init(const char* callsign, AL
 {
 	auto is = new aprs_is
 	{
-		.client   = APRS::IS::Client(AL::String(callsign), passcode, AL::String(filter ? filter : "")),
+		.client   = APRS::IS::Client(AL::String(callsign), passcode, AL::String(filter ? filter : ""), "APRS", digipath),
 		.digipath = digipath,
 	};
 
@@ -177,9 +177,11 @@ bool                                       aprs_is_send_message(aprs_is* is, con
 		.Destination = destination
 	};
 
+	is->client.SetTocall(tocall);
+
 	try
 	{
-		if (!is->client.SendMessage(message, tocall, is->digipath))
+		if (!is->client.SendMessage(message))
 		{
 			aprs_is_disconnect(is);
 
@@ -221,9 +223,11 @@ bool                                       aprs_is_send_position(aprs_is* is, co
 		.SymbolTableKey = *symbol_table_key
 	};
 
+	is->client.SetTocall(tocall);
+
 	try
 	{
-		if (!is->client.SendPosition(position, tocall, is->digipath))
+		if (!is->client.SendPosition(position))
 		{
 			aprs_is_disconnect(is);
 
