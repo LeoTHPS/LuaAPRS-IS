@@ -40,7 +40,7 @@ namespace APRS::IS
 
 	class API
 	{
-		inline static AL::Lua54::State lua;
+		inline static AL::Lua54::Lua lua;
 
 		API() = delete;
 
@@ -143,34 +143,17 @@ namespace APRS::IS
 				"API not initialized"
 			);
 
-			AL::FileSystem::Path path(
-				file
-			);
-
-			try
-			{
-				if (!path.Exists())
-				{
-
-					return false;
-				}
-			}
-			catch (AL::Exception& exception)
-			{
-
-				throw AL::Exception(
-					AL::Move(exception),
-					"Error checking if file exists"
-				);
-			}
-
 			script_init();
 
 			try
 			{
-				lua.RunFile(
-					path
-				);
+				if (!lua.RunFile(file))
+				{
+
+					throw AL::Exception(
+						"File not found"
+					);
+				}
 			}
 			catch (AL::Exception& exception)
 			{

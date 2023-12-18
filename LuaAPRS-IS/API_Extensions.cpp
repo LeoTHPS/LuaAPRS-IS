@@ -2,7 +2,7 @@
 
 #include "Extensions/Script.hpp"
 
-#define APRS_IS_API_DEFINE_Extension(__extension_name__, ...) void RegisterExtension_##__extension_name__(AL::Lua54::State& lua) __VA_ARGS__
+#define APRS_IS_API_DEFINE_Extension(__extension_name__, ...) void RegisterExtension_##__extension_name__(AL::Lua54::Lua& lua) __VA_ARGS__
 #define APRS_IS_API_RegisterExtension(__extension_name__)          RegisterExtension_##__extension_name__(lua)
 
 APRS_IS_API_DEFINE_Extension(Script,

@@ -36,10 +36,10 @@ enum DISCORD_RPC_USER_PREMIUM_TYPES : typename AL::Get_Enum_Or_Integer_Base<Disc
 	DISCORD_RPC_USER_PREMIUM_TYPE_NITRO         = static_cast<typename AL::Get_Enum_Or_Integer_Base<DiscordRPC::UserPremiumTypes>::Type>(DiscordRPC::UserPremiumTypes::Nitro)
 };
 
-typedef AL::Lua54::LuaCallback<void(const char* user_id, const char* user_name, const char* user_username, DISCORD_RPC_USER_FLAGS user_flags, DISCORD_RPC_USER_PREMIUM_TYPES user_premium)> lua_discord_rpc_on_ready_event_handler;
-typedef AL::Lua54::LuaCallback<void(AL::uint16 error_code, const char* error_message)>                                                                                                      lua_discord_rpc_on_error_event_handler;
-typedef AL::Lua54::LuaCallback<void()>                                                                                                                                                      lua_discord_rpc_on_connect_event_handler;
-typedef AL::Lua54::LuaCallback<void(AL::uint16 error_code, const char* error_message)>                                                                                                      lua_discord_rpc_on_disconnect_event_handler;
+typedef AL::Lua54::Function<void(const char* user_id, const char* user_name, const char* user_username, DISCORD_RPC_USER_FLAGS user_flags, DISCORD_RPC_USER_PREMIUM_TYPES user_premium)> lua_discord_rpc_on_ready_event_handler;
+typedef AL::Lua54::Function<void(AL::uint16 error_code, const char* error_message)>                                                                                                      lua_discord_rpc_on_error_event_handler;
+typedef AL::Lua54::Function<void()>                                                                                                                                                      lua_discord_rpc_on_connect_event_handler;
+typedef AL::Lua54::Function<void(AL::uint16 error_code, const char* error_message)>                                                                                                      lua_discord_rpc_on_disconnect_event_handler;
 
 discord_rpc*                 discord_rpc_init(const char* application_id, lua_discord_rpc_on_ready_event_handler on_ready, lua_discord_rpc_on_error_event_handler on_error, lua_discord_rpc_on_connect_event_handler on_connect, lua_discord_rpc_on_disconnect_event_handler on_disconnect)
 {

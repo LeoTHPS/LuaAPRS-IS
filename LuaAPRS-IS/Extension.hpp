@@ -5,12 +5,12 @@
 
 struct Extension
 {
-	AL::Lua54::State* lua;
+	AL::Lua54::Lua* lua;
 };
 
 #if defined(LUA_APRS_IS_EXTENSION)
 	#define LUA_APRS_IS_EXTENSION_INIT(...) \
-		extern "C" AL_DLL_EXPORT Extension* AL_CDECL lua_aprs_is_extension_init(AL::Lua54::State& lua) \
+		extern "C" AL_DLL_EXPORT Extension* AL_CDECL lua_aprs_is_extension_init(AL::Lua54::Lua& lua) \
 		{ \
 			auto extension = new Extension \
 			{ \
@@ -30,7 +30,7 @@ struct Extension
 			delete extension; \
 		}
 #else
-	typedef Extension*(AL_CDECL lua_aprs_is_extension_init)(AL::Lua54::State& lua);
+	typedef Extension*(AL_CDECL lua_aprs_is_extension_init)(AL::Lua54::Lua& lua);
 	typedef void      (AL_CDECL lua_aprs_is_extension_deinit)(Extension* extension);
 #endif
 
