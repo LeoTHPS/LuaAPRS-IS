@@ -1,4 +1,4 @@
-Note: This project is no longer being maintained and will be replaced in the near future.
+Note: This project is no longer being maintained and has been replaced by [APRService](//github.com/LeoTHPS/APRService)
 
 # LuaAPRS-IS
 ###### An APRS-IS client with a Lua 5.4 API.
